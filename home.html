@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .notification-icon:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #000000;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 16px;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .upload-banner {
+            margin-bottom: 18px;
+            padding: 14px;
+            border-radius: 12px;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+        }
+        .upload-content {
+            flex: 1;
+            text-align: left;
+        }
+        .upload-button {
+            margin-left: 10px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .view-more {
+            font-size: 12px;
+            color: #666;
+            font-weight: normal;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 4px 6px;
+            border-radius: 12px;
+            transition: background-color 0.2s;
+        }
+        .view-more:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .scrollable-container {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .inspiration-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 16px;
+            padding: 8px 4px;
+            margin: 0 -4px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 8px;
+        }
+        .inspiration-list::-webkit-scrollbar {
+            display: none;
+        }
+        .inspiration-item {
+            min-width: 120px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F5F5F5;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            scroll-snap-align: center;
+        }
+        .inspiration-item:active {
+            transform: scale(0.96);
+        }
+        .inspiration-image {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #EEEEEE;
+            color: #666666;
+            font-size: 14px;
+            flex-direction: column;
+        }
+        .inspiration-name {
+            padding: 8px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .effect-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .effect-item {
+            background-color: #F5F5F5;
+            border-radius: 12px;
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .effect-item:active {
+            transform: scale(0.96);
+            background-color: #EEEEEE;
+        }
+        .effect-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+        .effect-name {
+            font-size: 12px;
+        }
+        .trending-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .trending-item {
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F5F5F5;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .trending-item:active {
+            transform: scale(0.98);
+        }
+        .trending-image {
+            width: 100%;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #EEEEEE;
+            color: #666666;
+            font-size: 14px;
+            flex-direction: column;
+        }
+        .trending-info {
+            padding: 8px;
+        }
+        .trending-style {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .trending-author {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        .author-avatar {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #DDD;
+            margin-right: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #999;
+        }
+        .tab-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F5F5;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 0;
+            transition: opacity 0.2s;
+        }
+        .tab-item:active {
+            opacity: 0.7;
+        }
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .active {
+            color: #000000;
+        }
+        .inactive {
+            color: #CCCCCC;
+        }
+        button {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+        .image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .placeholder-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">原物永伴</h1>
+        <div class="notification-icon" onclick="window.location.href='notification-center.html'">
+            <i class="fa-solid fa-bell text-lg"></i>
+            <div class="notification-badge"></div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 上传引导区 - 更紧凑的水平布局 -->
+        <div class="upload-banner">
+            <div class="upload-content">
+                <h2 class="text-base font-medium mb-1">开始AI创作</h2>
+                <p class="text-gray-500 text-xs">上传图片，一键转换为动态视频或多种艺术风格</p>
+            </div>
+            <div class="upload-button">
+                <button class="bg-black text-white px-4 py-2 rounded-full text-sm" onclick="syncAndNavigate('creation.html', '图片上传')">
+                    上传图片
+                </button>
+            </div>
+        </div>
+
+        <!-- 效果风格 - 更紧凑设计 -->
+        <div>
+            <div class="section-title">效果选择</div>
+            <div class="effect-list">
+                <div class="effect-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                    <i class="fas fa-video effect-icon"></i>
+                    <div class="effect-name">动态视频</div>
+                </div>
+                <div class="effect-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                    <i class="fas fa-paint-brush effect-icon"></i>
+                    <div class="effect-name">动漫风格</div>
+                </div>
+                <div class="effect-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                    <i class="fas fa-palette effect-icon"></i>
+                    <div class="effect-name">水彩效果</div>
+                </div>
+                <div class="effect-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                    <i class="fas fa-cubes effect-icon"></i>
+                    <div class="effect-name">像素风格</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 创作灵感 -->
+        <div>
+            <div class="section-title">
+                <span>创作灵感</span>
+                <span class="view-more" onclick="syncAndNavigate('community.html', '社区页')">查看更多 <i class="fas fa-angle-right text-xs ml-1"></i></span>
+            </div>
+            
+            <div class="scrollable-container">
+                <div class="inspiration-list" id="inspiration-list">
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-moon placeholder-icon"></i>
+                            <span>星空少女</span>
+                        </div>
+                        <div class="inspiration-name">星空少女</div>
+                    </div>
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-city placeholder-icon"></i>
+                            <span>赛博朋克</span>
+                        </div>
+                        <div class="inspiration-name">赛博朋克</div>
+                    </div>
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-spa placeholder-icon"></i>
+                            <span>花海场景</span>
+                        </div>
+                        <div class="inspiration-name">花海场景</div>
+                    </div>
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-user-astronaut placeholder-icon"></i>
+                            <span>动漫人物</span>
+                        </div>
+                        <div class="inspiration-name">动漫人物</div>
+                    </div>
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-rocket placeholder-icon"></i>
+                            <span>科幻城市</span>
+                        </div>
+                        <div class="inspiration-name">科幻城市</div>
+                    </div>
+                    <div class="inspiration-item" onclick="syncAndNavigate('creation.html', '图片上传')">
+                        <div class="inspiration-image">
+                            <i class="fas fa-dragon placeholder-icon"></i>
+                            <span>幻想生物</span>
+                        </div>
+                        <div class="inspiration-name">幻想生物</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 热门作品 -->
+        <div>
+            <div class="section-title">
+                <span>热门作品</span>
+                <span class="view-more" onclick="syncAndNavigate('community.html', '社区页')">更多精彩 <i class="fas fa-angle-right text-xs ml-1"></i></span>
+            </div>
+            <div class="trending-list">
+                <div class="trending-item" onclick="syncAndNavigate('artwork-detail.html', '作品详情')">
+                    <div class="trending-image">
+                        <i class="fas fa-image placeholder-icon"></i>
+                        <span>热门作品1</span>
+                    </div>
+                    <div class="trending-info">
+                        <div class="trending-style">动态转换</div>
+                        <div class="trending-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <span>幻想大师</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="trending-item" onclick="syncAndNavigate('artwork-detail.html', '作品详情')">
+                    <div class="trending-image">
+                        <i class="fas fa-paint-brush placeholder-icon"></i>
+                        <span>热门作品2</span>
+                    </div>
+                    <div class="trending-info">
+                        <div class="trending-style">水彩风格</div>
+                        <div class="trending-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <span>像素艺术家</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="trending-item" onclick="syncAndNavigate('artwork-detail.html', '作品详情')">
+                    <div class="trending-image">
+                        <i class="fas fa-video placeholder-icon"></i>
+                        <span>热门作品3</span>
+                    </div>
+                    <div class="trending-info">
+                        <div class="trending-style">动态转换</div>
+                        <div class="trending-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <span>创作达人</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="trending-item" onclick="syncAndNavigate('artwork-detail.html', '作品详情')">
+                    <div class="trending-image">
+                        <i class="fas fa-cube placeholder-icon"></i>
+                        <span>热门作品4</span>
+                    </div>
+                    <div class="trending-info">
+                        <div class="trending-style">像素风格</div>
+                        <div class="trending-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <span>二次元爱好者</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部Tab导航 -->
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="syncAndNavigate('home.html', '首页')">
+            <i class="fa-solid fa-house tab-icon"></i>
+            <span>首页</span>
+        </div>
+        <div class="tab-item inactive" onclick="syncAndNavigate('community.html', '社区页')">
+            <i class="fa-regular fa-compass tab-icon"></i>
+            <span>社区</span>
+        </div>
+        <div class="tab-item inactive" onclick="syncAndNavigate('device.html', '设备页')">
+            <i class="fa-solid fa-microchip tab-icon"></i>
+            <span>设备</span>
+        </div>
+        <div class="tab-item inactive" onclick="syncAndNavigate('profile.html', '个人中心')">
+            <i class="fa-regular fa-user tab-icon"></i>
+            <span>我的</span>
+        </div>
+    </div>
+
+    <script>
+        // 为创作灵感滚动区域添加交互效果，但移除指示器相关代码
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollContainer = document.getElementById('inspiration-list');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            scrollContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                scrollContainer.style.cursor = 'grabbing';
+                startX = e.pageX - scrollContainer.offsetLeft;
+                scrollLeft = scrollContainer.scrollLeft;
+            });
+
+            scrollContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+            });
+
+            scrollContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+                // 添加滑动结束后自动对齐到最近的项
+                snapToClosestItem(scrollContainer);
+            });
+
+            scrollContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - scrollContainer.offsetLeft;
+                const walk = (x - startX) * 2; // 滚动速度
+                scrollContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // 为触摸设备添加滑动效果
+            scrollContainer.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                scrollLeft = scrollContainer.scrollLeft;
+            }, { passive: true });
+
+            scrollContainer.addEventListener('touchmove', (e) => {
+                const x = e.touches[0].clientX;
+                const walk = (startX - x) * 1.5;
+                scrollContainer.scrollLeft = scrollLeft + walk;
+            }, { passive: true });
+            
+            scrollContainer.addEventListener('touchend', () => {
+                // 添加触摸结束后自动对齐到最近的项
+                snapToClosestItem(scrollContainer);
+            });
+            
+            // 滚动结束后自动对齐到最近的项
+            function snapToClosestItem(container) {
+                // 获取容器的宽度
+                const containerWidth = container.offsetWidth;
+                // 获取所有项
+                const items = container.querySelectorAll('.inspiration-item');
+                // 如果没有项，返回
+                if (!items.length) return;
+                
+                // 计算当前滚动位置
+                const scrollPosition = container.scrollLeft;
+                // 初始化最近的项和最小距离
+                let closestItem = null;
+                let minDistance = Infinity;
+                
+                // 遍历所有项，找到最近的
+                items.forEach(item => {
+                    // 获取项的左边距离容器左边的距离
+                    const itemLeft = item.offsetLeft;
+                    // 计算项的中心点
+                    const itemCenter = itemLeft + item.offsetWidth / 2;
+                    // 计算容器的视图中心点
+                    const containerCenter = scrollPosition + containerWidth / 2;
+                    // 计算距离
+                    const distance = Math.abs(itemCenter - containerCenter);
+                    
+                    // 如果这个项比之前找到的更近，就更新
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestItem = item;
+                    }
+                });
+                
+                // 如果找到最近的项，滚动到它的中心
+                if (closestItem) {
+                    const itemLeft = closestItem.offsetLeft;
+                    const itemCenter = itemLeft + closestItem.offsetWidth / 2;
+                    const targetScroll = itemCenter - containerWidth / 2;
+                    
+                    // 平滑滚动到目标位置
+                    container.scrollTo({
+                        left: targetScroll,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        });
+        
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+    </script>
+</body>
+</html> 

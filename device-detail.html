@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 设备详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .device-header {
+            background-color: #FFFFFF;
+            padding: 24px 20px;
+            border-bottom: 1px solid #F5F5F5;
+            margin-bottom: 10px;
+        }
+        .device-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #F5F5F5;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+        }
+        .device-icon-inner {
+            font-size: 32px;
+            color: #000000;
+        }
+        .device-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #F5F5F5;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .device-status-badge.online {
+            color: #000000;
+        }
+        .device-status-badge.offline {
+            color: #666666;
+        }
+        .device-status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .device-status-dot.online {
+            background-color: #000000;
+        }
+        .device-status-dot.offline {
+            background-color: #CCCCCC;
+        }
+        .info-section {
+            background-color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #666666;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .info-item {
+            display: flex;
+            padding: 16px 20px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #000000;
+            font-size: 14px;
+        }
+        .info-value {
+            color: #666666;
+            font-size: 14px;
+            text-align: right;
+        }
+        .action-section {
+            background-color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+        .action-item {
+            display: flex;
+            padding: 16px 20px;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .action-item:last-child {
+            border-bottom: none;
+        }
+        .action-left {
+            display: flex;
+            align-items: center;
+        }
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #CCCCCC;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #000000;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        .danger-section {
+            background-color: #FFFFFF;
+            padding: 16px 20px;
+            margin-top: 10px;
+            margin-bottom: 40px;
+        }
+        .danger-button {
+            color: #FF3B30;
+            font-size: 16px;
+            text-align: center;
+            width: 100%;
+        }
+        .empty-text {
+            color: #777777;
+            text-align: center;
+            padding: 40px 0;
+            font-size: 14px;
+        }
+        
+        /* 添加自定义弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-left text-lg mr-4 cursor-pointer" onclick="syncAndNavigate('device.html', '设备页')"></i>
+            <h1 class="text-xl font-bold">设备详情</h1>
+        </div>
+        <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 设备信息头部 -->
+        <div class="device-header">
+            <div class="flex">
+                <div class="device-icon">
+                    <i class="fas fa-tablet-alt device-icon-inner"></i>
+                </div>
+                <div class="flex flex-col justify-center">
+                    <h2 class="text-xl font-medium">原物永伴·镜</h2>
+                    <div class="device-status-badge online">
+                        <span class="device-status-dot online"></span>
+                        已连接
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between mt-6">
+                <div class="text-sm text-gray-500">电量: 76%</div>
+                <div class="text-sm text-gray-500">信号强度: 良好</div>
+            </div>
+        </div>
+        
+        <!-- 设备基本信息 -->
+        <div class="info-section">
+            <div class="section-title">基本信息</div>
+            <div class="info-item">
+                <div class="info-label">设备名称</div>
+                <div class="info-value">原物永伴·镜</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">设备型号</div>
+                <div class="info-value">N3-2201</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">MAC地址</div>
+                <div class="info-value">F1:A2:B3:C4:D5:E6</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">固件版本</div>
+                <div class="info-value">V2.1.3</div>
+            </div>
+        </div>
+        
+        <!-- 设备管理选项 -->
+        <div class="action-section">
+            <div class="section-title">设备设置</div>
+            <div class="action-item">
+                <div class="action-left">
+                    <div class="action-icon">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="info-label">重命名设备</div>
+                </div>
+                <i class="fas fa-angle-right text-gray-300"></i>
+            </div>
+            <div class="action-item">
+                <div class="action-left">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="info-label">设备通知</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="action-item">
+                <div class="action-left">
+                    <div class="action-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="info-label">传输内容管理</div>
+                </div>
+                <i class="fas fa-angle-right text-gray-300"></i>
+            </div>
+            <div class="action-item">
+                <div class="action-left">
+                    <div class="action-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="info-label">固件更新</div>
+                </div>
+                <div class="text-xs bg-gray-100 text-gray-500 py-1 px-2 rounded">已是最新</div>
+            </div>
+        </div>
+        
+        <!-- 危险操作区域 -->
+        <div class="danger-section">
+            <button class="danger-button">断开连接</button>
+        </div>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+        
+        // 初始化断开连接按钮
+        document.querySelector('.danger-button').addEventListener('click', function() {
+            showConfirmModal('确定要断开与此设备的连接吗？', function() {
+                showToast('设备已断开连接');
+                syncAndNavigate('device.html', '设备页');
+            });
+        });
+        
+        // 初始化设备重命名功能
+        document.querySelector('.rename-button').addEventListener('click', function() {
+            const currentName = document.querySelector('.flex-col h2').textContent;
+            
+            // 创建一个输入框的HTML结构
+            const modalContainer = document.querySelector('.modal-container');
+            const originalContent = modalContainer.innerHTML;
+            
+            modalContainer.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">重命名设备</div>
+                    <div style="margin: 20px 0;">
+                        <input type="text" id="renameInput" value="${currentName}" 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <div class="modal-button cancel" id="renameCancelBtn">取消</div>
+                    <div class="modal-button confirm" id="renameConfirmBtn">确定</div>
+                </div>
+            `;
+            
+            // 显示弹窗
+            document.getElementById('customModal').style.display = 'flex';
+            
+            // 聚焦到输入框并选中内容
+            const input = document.getElementById('renameInput');
+            input.focus();
+            input.select();
+            
+            // 绑定事件
+            document.getElementById('renameCancelBtn').onclick = function() {
+                document.getElementById('customModal').style.display = 'none';
+                // 恢复原始弹窗内容
+                modalContainer.innerHTML = originalContent;
+            };
+            
+            document.getElementById('renameConfirmBtn').onclick = function() {
+                const newName = document.getElementById('renameInput').value.trim();
+                if (newName && newName !== currentName) {
+                    document.querySelector('.flex-col h2').textContent = newName;
+                    document.querySelectorAll('.info-item')[0].querySelector('.info-value').textContent = newName;
+                    showToast('设备已重命名为：' + newName);
+                }
+                document.getElementById('customModal').style.display = 'none';
+                // 恢复原始弹窗内容
+                modalContainer.innerHTML = originalContent;
+            };
+        });
+
+        // 设备管理选项点击事件
+        document.querySelectorAll('.action-item').forEach(function(item, index) {
+            if (index === 0) { // 重命名设备
+                item.addEventListener('click', function() {
+                    const newName = prompt('请输入新的设备名称', '原物永伴·镜');
+                    if (newName && newName.trim() !== '') {
+                        document.querySelector('.flex-col h2').textContent = newName;
+                        document.querySelectorAll('.info-item')[0].querySelector('.info-value').textContent = newName;
+                        showToast('设备已重命名为：' + newName);
+                    }
+                });
+            } else if (index === 2) { // 传输内容管理
+                item.addEventListener('click', function() {
+                    window.location.href = 'transfer-progress.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 作品编辑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+            background-color: #ffffff;
+            z-index: 10;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 16px 20px;
+            padding-bottom: 80px; /* 增加底部内边距，为固定按钮腾出空间 */
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .section-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .page-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .preview-container {
+            width: 100%;
+            max-width: 280px; /* 减小预览图尺寸 */
+            height: 280px; /* 减小预览图高度 */
+            margin: 0 auto 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F0F0F0;
+            position: relative;
+            border: 1px solid #E5E5E5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .result-type {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .type-icon {
+            margin-right: 6px;
+            font-size: 11px;
+        }
+        .form-group {
+            margin-bottom: 14px; /* 减小表单组间距 */
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 6px; /* 减小标签间距 */
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .required-mark {
+            color: #FF4D4F;
+            margin-left: 4px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #EEEEEE;
+            background-color: #F5F5F5;
+            font-size: 14px;
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #EEEEEE;
+            background-color: #F5F5F5;
+            font-size: 14px;
+            resize: none;
+            min-height: 80px; /* 减小文本框高度 */
+        }
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px; /* 减小计数器上边距 */
+        }
+        .topic-section {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .scroll-indicator {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #999;
+            font-size: 16px;
+            animation: bounce 1.5s infinite;
+            opacity: 0.7;
+            width: 100%;
+            text-align: center;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-3px);
+            }
+        }
+        .topic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .topic-header:active {
+            background-color: #f9f9f9;
+        }
+        .topic-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .topic-icon {
+            transition: transform 0.3s;
+        }
+        .topic-icon.open {
+            transform: rotate(180deg);
+        }
+        .topic-content {
+            display: block; /* 默认显示部分话题内容 */
+            background-color: transparent;
+            border-radius: 8px;
+            padding: 12px 0;
+            max-height: 94px; /* 显示部分话题区域 */
+            overflow: hidden;
+            position: relative;
+        }
+        .topic-content::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+            pointer-events: none;
+        }
+        .topic-content.expanded {
+            max-height: none;
+        }
+        .topic-content.expanded::after {
+            display: none;
+        }
+        .topic-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .topic-item {
+            background-color: rgba(245, 245, 245, 0.8);
+            border-radius: 18px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #00b894;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .topic-item.red {
+            color: #e74c3c;
+        }
+        .topic-item.blue {
+            color: #0984e3;
+        }
+        .topic-item.yellow {
+            color: #f1c40f;
+        }
+        .topic-item.purple {
+            color: #9b59b6;
+        }
+        .topic-prefix {
+            margin-right: 4px;
+            font-weight: bold;
+            color: inherit;
+        }
+        .topic-item.selected {
+            background-color: #58e2c4;
+            color: #000000;
+        }
+        .topic-item.selected.red {
+            background-color: #ff6b6b;
+        }
+        .topic-item.selected.blue {
+            background-color: #5fd4ff;
+        }
+        .topic-item.selected.yellow {
+            background-color: #ffe566;
+        }
+        .topic-item.selected.purple {
+            background-color: #d897ff;
+        }
+        .topic-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+        .back-button {
+            margin-right: 16px;
+            cursor: pointer;
+        }
+        .see-more-btn {
+            width: 100%;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            padding: 6px 0;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .see-more-btn:active {
+            opacity: 0.7;
+        }
+        /* 修改发布按钮样式，使其固定在底部 */
+        .publish-button-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 14px 20px;
+            background-color: #FFFFFF;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .publish-button {
+            width: 100%;
+            background-color: #000000;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .publish-button:active {
+            transform: scale(0.98);
+        }
+        .publish-button:disabled {
+            background-color: #CCCCCC;
+            cursor: not-allowed;
+        }
+        .selected-topics-counter {
+            background-color: #000;
+            color: white;
+            font-size: 12px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        .tag-item.in-cloud {
+            background-color: #F5F5F5;
+            border-color: #E5E5E5;
+            color: #777777;
+        }
+        
+        /* 添加自定义弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <div class="flex items-center">
+            <i class="fas fa-arrow-left back-button" onclick="navigateBack()"></i>
+            <h1 class="text-xl font-bold">作品编辑</h1>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <div class="page-layout">
+            <!-- 第一部分：预览图和基本信息 -->
+            <div class="section-container">
+                <!-- 预览图 -->
+                <div class="preview-container">
+                    <img src="https://via.placeholder.com/280x280/f5f5f5/666666?text=预览图" alt="作品预览" class="preview-image" onerror="this.src='data:image/svg+xml,%3Csvg width=\'280\' height=\'280\' viewBox=\'0 0 280 280\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Crect width=\'280\' height=\'280\' fill=\'%23F0F0F0\'/%3E%3Cpath d=\'M40 40L240 240\' stroke=\'%23E0E0E0\' stroke-width=\'4\'/%3E%3Cpath d=\'M240 40L40 240\' stroke=\'%23E0E0E0\' stroke-width=\'4\'/%3E%3C/svg%3E'">
+                    <div class="result-type">
+                        <i class="fas fa-video type-icon"></i>
+                        <span>动态视频</span>
+                    </div>
+                </div>
+
+                <!-- 编辑表单 -->
+                <div class="form-group">
+                    <label class="form-label">作品名称<span class="required-mark">*</span></label>
+                    <input type="text" class="form-input" id="titleInput" maxlength="20" placeholder="请输入作品名称（最多20字）" value="星空下的少女">
+                    <div class="char-counter"><span id="titleCounter">6</span>/20</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">作品描述</label>
+                    <textarea class="form-textarea" id="descInput" maxlength="100" placeholder="请输入作品描述（最多100字）">使用AI动态转换技术，让原本静态的星空下的少女图片获得了轻微的动态效果，主要体现在头发和裙摆随风飘动，以及星空中的星星闪烁。</textarea>
+                    <div class="char-counter"><span id="descCounter">80</span>/100</div>
+                </div>
+            </div>
+
+            <!-- 第二部分：话题部分 -->
+            <div class="topic-section">
+                <div class="topic-header" id="topicToggle">
+                    <div class="flex items-center">
+                        <div class="topic-title">添加话题</div>
+                        <div class="selected-topics-counter" id="selectedTopicsCount" style="display: none;">0</div>
+                    </div>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <div class="topic-content" id="topicContent">
+                    <div class="topic-items">
+                        <div class="topic-item blue" data-topic="动态视频">
+                            <span class="topic-prefix">#</span>动态视频
+                        </div>
+                        <div class="topic-item" data-topic="二次元">
+                            <span class="topic-prefix">#</span>二次元
+                        </div>
+                        <div class="topic-item yellow" data-topic="星空">
+                            <span class="topic-prefix">#</span>星空
+                        </div>
+                        <div class="topic-item purple" data-topic="人物">
+                            <span class="topic-prefix">#</span>人物
+                        </div>
+                        <div class="topic-item" data-topic="风景">
+                            <span class="topic-prefix">#</span>风景
+                        </div>
+                        <div class="topic-item blue" data-topic="动漫">
+                            <span class="topic-prefix">#</span>动漫
+                        </div>
+                        <div class="topic-item yellow" data-topic="游戏">
+                            <span class="topic-prefix">#</span>游戏
+                        </div>
+                        <div class="topic-item" data-topic="创意">
+                            <span class="topic-prefix">#</span>创意
+                        </div>
+                        <div class="topic-item red" data-topic="猫人小姐请过节">
+                            <span class="topic-prefix">#</span>猫人小姐请过节
+                        </div>
+                        <div class="topic-item purple" data-topic="春天在那小朋友的眼睛里">
+                            <span class="topic-prefix">#</span>春天在那小朋友的眼睛里
+                        </div>
+                        <div class="topic-item blue" data-topic="媒改台词大作战">
+                            <span class="topic-prefix">#</span>媒改台词大作战
+                        </div>
+                        <div class="topic-item red" data-topic="脑洞大开改改改">
+                            <span class="topic-prefix">#</span>脑洞大开改改改
+                        </div>
+                    </div>
+                </div>
+                <!-- 查看更多按钮 -->
+                <div class="see-more-btn" id="seeMoreTopics">查看更多话题<i class="fas fa-chevron-down ml-1"></i></div>
+                <!-- 滚动指示器 -->
+                <div class="scroll-indicator">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 固定在底部的发布按钮 -->
+    <div class="publish-button-container">
+        <button class="publish-button" id="publishButton">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>发布
+        </button>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 获取或设置来源页面记录
+        function getEntrySource() {
+            // 首先尝试从URL参数中获取来源
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('source');
+            
+            // 如果URL中有来源参数，则优先使用并保存到localStorage
+            if (source) {
+                localStorage.setItem('entrySource', source);
+                return source;
+            }
+            
+            // 如果URL中没有，则尝试从localStorage获取
+            const savedSource = localStorage.getItem('entrySource');
+            if (savedSource) {
+                return savedSource;
+            }
+            
+            // 默认返回到创作结果页面
+            return 'creation-result';
+        }
+        
+        // 导航回来源页面
+        function navigateBack() {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: 'creation-result.html',
+                    title: '创作结果'
+                }, '*');
+            }
+            
+            // 返回创作完成页面
+            window.location.href = 'creation-result.html';
+        }
+        
+        // 导航到指定页面
+        function navigateTo(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 导航到目标页面
+            window.location.href = page;
+        }
+
+        // 初始化字数计数器
+        function initCharCounter(inputId, counterId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            
+            // 初始化计数 - 显示已输入字数
+            counter.textContent = input.value.length;
+            
+            // 输入时更新计数
+            input.addEventListener('input', function() {
+                // 更新为已输入字数
+                counter.textContent = this.value.length;
+                
+                // 验证发布按钮状态
+                validateForm();
+            });
+        }
+        
+        // 表单验证
+        function validateForm() {
+            const titleInput = document.getElementById('titleInput');
+            const publishButton = document.getElementById('publishButton');
+            
+            // 作品名称为必填项
+            if (titleInput.value.trim() === '') {
+                publishButton.disabled = true;
+            } else {
+                publishButton.disabled = false;
+            }
+        }
+
+        // 更新选中话题计数
+        function updateSelectedTopicsCount() {
+            const selectedTopics = document.querySelectorAll('.topic-item.selected');
+            const countElement = document.getElementById('selectedTopicsCount');
+            
+            if (selectedTopics.length > 0) {
+                countElement.textContent = selectedTopics.length;
+                countElement.style.display = 'flex';
+            } else {
+                countElement.style.display = 'none';
+            }
+        }
+
+        // 话题选择功能
+        function initTopicSelector() {
+            const topicToggle = document.getElementById('topicToggle');
+            const topicContent = document.getElementById('topicContent');
+            const topicIcon = document.querySelector('.topic-icon');
+            const topicItems = document.querySelectorAll('.topic-item');
+            const seeMoreBtn = document.getElementById('seeMoreTopics');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            
+            // 显示更多话题按钮点击事件
+            seeMoreBtn.addEventListener('click', function() {
+                topicContent.classList.toggle('expanded');
+                if (topicContent.classList.contains('expanded')) {
+                    this.innerHTML = '收起话题<i class="fas fa-chevron-up ml-1"></i>';
+                    scrollIndicator.style.display = 'none';
+                } else {
+                    this.innerHTML = '查看更多话题<i class="fas fa-chevron-down ml-1"></i>';
+                    scrollIndicator.style.display = 'block';
+                }
+            });
+            
+            // 话题展开/收起（这里保持收起/展开功能，但默认显示部分内容）
+            topicToggle.addEventListener('click', function() {
+                topicIcon.classList.toggle('open');
+                
+                // 如果话题内容当前不是展开状态，点击后展开
+                if (!topicContent.classList.contains('expanded')) {
+                    topicContent.classList.add('expanded');
+                    seeMoreBtn.innerHTML = '收起话题<i class="fas fa-chevron-up ml-1"></i>';
+                    scrollIndicator.style.display = 'none';
+                } 
+                // 如果已经是展开状态，点击后收起
+                else {
+                    topicContent.classList.remove('expanded');
+                    seeMoreBtn.innerHTML = '查看更多话题<i class="fas fa-chevron-down ml-1"></i>';
+                    scrollIndicator.style.display = 'block';
+                }
+            });
+            
+            // 话题选择
+            topicItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateSelectedTopicsCount();
+                });
+            });
+            
+            // 滚动后隐藏滚动指示器
+            document.querySelector('.content').addEventListener('scroll', function() {
+                if (this.scrollTop > 50) {
+                    scrollIndicator.style.display = 'none';
+                } else if (!topicContent.classList.contains('expanded')) {
+                    scrollIndicator.style.display = 'block';
+                }
+            });
+        }
+
+        // 初始化发布按钮
+        function initPublishButton() {
+            const publishButton = document.getElementById('publishButton');
+            
+            publishButton.addEventListener('click', function() {
+                if (!this.disabled) {
+                    // 收集选中的话题
+                    const selectedTopics = [];
+                    document.querySelectorAll('.topic-item.selected').forEach(item => {
+                        selectedTopics.push(item.getAttribute('data-topic'));
+                    });
+                    
+                    // 模拟发布过程
+                    showToast('作品已成功发布！');
+                    
+                    // 获取来源并根据来源导航到不同页面
+                    const source = getEntrySource();
+                    
+                    if (source === 'home') {
+                        // 如果来源是首页，返回首页
+                        navigateTo('home.html', '首页');
+                    } else if (source === 'community') {
+                        // 如果来源是社区页，返回社区页
+                        navigateTo('community.html', '社区');
+                    } else if (source === 'profile') {
+                        // 如果来源是个人中心，返回个人中心
+                        navigateTo('profile.html', '我的');
+                    } else {
+                        // 默认返回创作结果页
+                        navigateTo('creation-result.html', '创作结果');
+                    }
+                }
+            });
+            
+            // 初始验证
+            validateForm();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化字数计数
+            initCharCounter('titleInput', 'titleCounter', 20);
+            initCharCounter('descInput', 'descCounter', 100);
+            
+            // 初始化话题选择器
+            initTopicSelector();
+            
+            // 初始化发布按钮
+            initPublishButton();
+            
+            // 记录当前的入口来源
+            getEntrySource();
+            
+            // 预选中一个话题作为示例
+            const defaultTopic = document.querySelector('.topic-item[data-topic="动态视频"]');
+            if (defaultTopic) {
+                defaultTopic.classList.add('selected');
+                updateSelectedTopicsCount();
+            }
+            
+            // 设置2秒后隐藏滚动指示器
+            setTimeout(() => {
+                const content = document.querySelector('.content');
+                if (content.scrollTop < 50) {
+                    content.scrollBy({
+                        top: 20,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 2000);
+        });
+
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+    </script>
+</body>
+</html> 

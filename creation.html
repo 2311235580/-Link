@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - AI创作</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .upload-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .upload-area {
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+            border-radius: 12px;
+            background-color: #F5F5F5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+            border: 1px dashed #CCCCCC;
+        }
+        .style-options-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 24px;
+        }
+        .style-options {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            margin: 24px -20px; /* 负边距扩展到屏幕边缘 */
+            margin-top: 0; /* 减少顶部边距 */
+            padding: 0 20px; /* 内边距补回容器边距 */
+            -webkit-overflow-scrolling: touch;
+            gap: 12px;
+            position: relative;
+            width: calc(100% + 40px); /* 补偿负边距 */
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+            transition: scroll 0.2s ease;
+            will-change: scroll-position; /* 提示浏览器优化滚动性能 */
+        }
+        .style-options::-webkit-scrollbar {
+            display: none;
+        }
+        .style-options.scrolling {
+            cursor: grabbing !important;
+        }
+        .scroll-fade {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 32px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .scroll-fade-left {
+            left: -20px;
+            background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        }
+        .scroll-fade-right {
+            right: -20px;
+            background: linear-gradient(to left, rgba(255,255,255,0.9), rgba(255,255,255,0));
+        }
+        .style-option {
+            min-width: 70px; /* 调整宽度使三个选项能在屏幕上显示 */
+            height: 70px; /* 调整高度与图示一致 */
+            border-radius: 8px; /* 减小圆角 */
+            background-color: #F5F5F5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666666;
+            border: 1px solid #EBEBEB; /* 浅灰色边框 */
+            scroll-snap-align: start;
+            padding: 0 4px; /* 添加水平内边距 */
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s; /* 平滑过渡效果 */
+            touch-action: pan-x; /* 优化触摸操作 */
+            box-shadow: none; /* 移除阴影 */
+        }
+        .style-option:active {
+            transform: scale(0.97);
+            background-color: #EEEEEE;
+        }
+        .style-option.active {
+            border: 2px solid #000000; /* 加粗边框 */
+            color: #000000;
+            background-color: #FFFFFF; /* 白色背景 */
+            box-shadow: none; /* 移除阴影 */
+        }
+        .style-icon {
+            font-size: 22px; /* 调整图标大小 */
+            margin-bottom: 6px;
+            color: inherit; /* 继承父元素颜色 */
+        }
+        .action-button {
+            width: 100%;
+            max-width: 320px;
+            background-color: #000000;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .action-button:disabled {
+            background-color: #CCCCCC;
+        }
+        .effect-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 320px;
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 12px;
+            margin-top: -8px;
+            padding-left: 0;
+            font-weight: normal;
+            text-align: center;
+        }
+        .close-button {
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .close-button:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .footer-note {
+            margin-top: 30px;
+            font-size: 11px;
+            color: #666666;
+            text-align: center;
+        }
+        
+        /* 添加自定义弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">AI创作</h1>
+        <div class="close-button" onclick="window.history.back()">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 上传区域 -->
+        <div class="upload-section">
+            <div class="upload-area">
+                <i class="fas fa-cloud-upload-alt text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500 text-center mb-2">点击上传图片</p>
+                <p class="text-xs text-gray-400 text-center">支持JPG、PNG格式<br>建议分辨率1080×1080以上</p>
+            </div>
+
+            <div class="effect-label">
+                选择转换效果
+            </div>
+
+            <!-- 风格选择 -->
+            <div class="style-options-wrapper">
+                <div class="scroll-fade scroll-fade-left"></div>
+                <div class="style-options" id="style-options">
+                    <div class="style-option active">
+                        <i class="fas fa-video style-icon"></i>
+                        <span>动态视频</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-paint-brush style-icon"></i>
+                        <span>动漫风格</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-palette style-icon"></i>
+                        <span>水彩效果</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-microchip style-icon"></i>
+                        <span>赛博朋克</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-cubes style-icon"></i>
+                        <span>像素风格</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-moon style-icon"></i>
+                        <span>星空效果</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-fire style-icon"></i>
+                        <span>霓虹风格</span>
+                    </div>
+                    <div class="style-option">
+                        <i class="fas fa-robot style-icon"></i>
+                        <span>机械风格</span>
+                    </div>
+                </div>
+                <div class="scroll-fade scroll-fade-right"></div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <button class="action-button" disabled>
+                下一步
+            </button>
+        </div>
+    </div>
+    
+    <!-- 底部Tab导航 -->
+    <div class="tab-bar" style="display: flex; justify-content: space-around; padding: 12px 0; background-color: #FFFFFF; border-top: 1px solid #F5F5F5;">
+        <div class="tab-item active" style="display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; padding: 4px 0;" onclick="syncAndNavigate('home.html', '首页')">
+            <i class="fa-solid fa-house" style="font-size: 20px; margin-bottom: 4px; color: #000000;"></i>
+            <span style="color: #000000;">首页</span>
+        </div>
+        <div class="tab-item inactive" style="display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; padding: 4px 0;" onclick="syncAndNavigate('community.html', '社区页')">
+            <i class="fa-regular fa-compass" style="font-size: 20px; margin-bottom: 4px; color: #CCCCCC;"></i>
+            <span style="color: #CCCCCC;">社区</span>
+        </div>
+        <div class="tab-item inactive" style="display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; padding: 4px 0;" onclick="syncAndNavigate('device.html', '设备页')">
+            <i class="fa-solid fa-microchip" style="font-size: 20px; margin-bottom: 4px; color: #CCCCCC;"></i>
+            <span style="color: #CCCCCC;">设备</span>
+        </div>
+        <div class="tab-item inactive" style="display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; padding: 4px 0;" onclick="syncAndNavigate('profile.html', '个人中心')">
+            <i class="fa-regular fa-user" style="font-size: 20px; margin-bottom: 4px; color: #CCCCCC;"></i>
+            <span style="color: #CCCCCC;">我的</span>
+        </div>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 风格选项点击事件
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 启用下一步按钮
+                document.querySelector('.action-button').disabled = false;
+            });
+        });
+
+        // 上传区域点击事件
+        document.querySelector('.upload-area').addEventListener('click', function() {
+            showToast('选择图片上传功能将在此处实现');
+            
+            // 模拟已上传图片，启用下一步按钮
+            document.querySelector('.action-button').disabled = false;
+        });
+        
+        // 下一步按钮点击事件
+        document.querySelector('.action-button').addEventListener('click', function() {
+            if (!this.disabled) {
+                // 获取来源并传递相应参数
+                const source = getEntrySource();
+                window.location.href = `creation-processing.html?source=${source}`;
+            }
+        });
+
+        // 获取或设置来源页面记录
+        function getEntrySource() {
+            // 首先尝试从URL参数中获取来源
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('source');
+            
+            // 如果URL中有来源参数，则优先使用并保存到localStorage
+            if (source) {
+                localStorage.setItem('entrySource', source);
+                return source;
+            }
+            
+            // 如果URL中没有，则尝试从localStorage获取
+            const savedSource = localStorage.getItem('entrySource');
+            if (savedSource) {
+                return savedSource;
+            }
+            
+            // 默认返回首页
+            return 'home';
+        }
+
+        // 为风格选项添加水平滑动功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 在页面加载时更新来源记录
+            getEntrySource();
+            
+            const scrollContainer = document.getElementById('style-options');
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let startTime; // 记录滑动开始时间
+            let lastX; // 记录上一次移动位置
+            let velocity = 0; // 滑动速度
+            
+            // 鼠标事件
+            scrollContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                scrollContainer.style.cursor = 'grabbing';
+                scrollContainer.classList.add('scrolling');
+                startX = e.pageX - scrollContainer.offsetLeft;
+                lastX = e.pageX;
+                scrollLeft = scrollContainer.scrollLeft;
+                startTime = Date.now();
+                velocity = 0;
+                
+                // 停止任何正在进行的动画
+                if (scrollContainer.scrollTimeout) {
+                    clearTimeout(scrollContainer.scrollTimeout);
+                }
+            });
+
+            scrollContainer.addEventListener('mouseleave', () => {
+                if (isDown) {
+                    isDown = false;
+                    scrollContainer.style.cursor = 'grab';
+                    scrollContainer.classList.remove('scrolling');
+                    endScroll();
+                }
+            });
+
+            scrollContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+                scrollContainer.classList.remove('scrolling');
+                endScroll();
+            });
+
+            scrollContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                
+                const x = e.pageX - scrollContainer.offsetLeft;
+                const walk = (x - startX) * 2.2; // 稍微提高滚动速度
+                
+                // 计算瞬时速度
+                const currentTime = Date.now();
+                const dt = currentTime - startTime;
+                if (dt > 0) {
+                    const dx = e.pageX - lastX;
+                    velocity = dx / dt * 15; // 调整系数以适合滚动惯性
+                }
+                
+                lastX = e.pageX;
+                startTime = currentTime;
+                
+                scrollContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // 触摸事件
+            scrollContainer.addEventListener('touchstart', (e) => {
+                scrollContainer.classList.add('scrolling');
+                startX = e.touches[0].clientX;
+                lastX = startX;
+                scrollLeft = scrollContainer.scrollLeft;
+                startTime = Date.now();
+                velocity = 0;
+                
+                // 停止任何正在进行的动画
+                if (scrollContainer.scrollTimeout) {
+                    clearTimeout(scrollContainer.scrollTimeout);
+                }
+            }, { passive: true });
+
+            scrollContainer.addEventListener('touchmove', (e) => {
+                const x = e.touches[0].clientX;
+                const walk = (startX - x) * 1; // 降低滚动乘数使滑动更平滑
+                
+                // 计算瞬时速度
+                const currentTime = Date.now();
+                const dt = currentTime - startTime;
+                if (dt > 0) {
+                    const dx = x - lastX;
+                    velocity = dx / dt * 15; // 调整系数以适合滚动惯性
+                }
+                
+                lastX = x;
+                startTime = currentTime;
+                
+                scrollContainer.scrollLeft = scrollLeft + walk;
+            }, { passive: true });
+            
+            scrollContainer.addEventListener('touchend', () => {
+                scrollContainer.classList.remove('scrolling');
+                endScroll();
+            });
+
+            scrollContainer.addEventListener('touchcancel', () => {
+                scrollContainer.classList.remove('scrolling');
+                endScroll();
+            });
+            
+            // 统一处理滚动结束逻辑
+            function endScroll() {
+                // 应用惯性滚动
+                applyMomentum();
+                
+                // 一小段延迟后进行对齐，让惯性滚动先进行
+                scrollContainer.scrollTimeout = setTimeout(() => {
+                    snapToClosestItem(scrollContainer);
+                }, 400);
+            }
+            
+            // 应用惯性滚动
+            function applyMomentum() {
+                if (Math.abs(velocity) < 0.1) return;
+                
+                let prevTime = Date.now();
+                let currentVelocity = velocity;
+                const friction = 0.95; // 摩擦系数 - 值越小停止越快
+                
+                function momentumScroll() {
+                    const currentTime = Date.now();
+                    const elapsed = currentTime - prevTime;
+                    prevTime = currentTime;
+                    
+                    // 根据摩擦力减小速度
+                    currentVelocity *= Math.pow(friction, elapsed / 16);
+                    
+                    // 如果速度足够小，停止滚动
+                    if (Math.abs(currentVelocity) < 0.1) return;
+                    
+                    // 应用滚动
+                    scrollContainer.scrollLeft -= currentVelocity;
+                    
+                    // 继续滚动
+                    requestAnimationFrame(momentumScroll);
+                }
+                
+                // 开始惯性滚动
+                requestAnimationFrame(momentumScroll);
+            }
+            
+            // 改进的对齐功能
+            function snapToClosestItem(container) {
+                const containerWidth = container.offsetWidth;
+                const items = container.querySelectorAll('.style-option');
+                if (!items.length) return;
+                
+                const scrollPosition = container.scrollLeft;
+                let closestItem = null;
+                let minDistance = Infinity;
+                
+                items.forEach(item => {
+                    const itemLeft = item.offsetLeft;
+                    // 计算到左边缘的距离，这样在开始位置时第一个项目会优先选择
+                    const distance = Math.abs(itemLeft - scrollPosition);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestItem = item;
+                    }
+                });
+                
+                if (closestItem) {
+                    // 对齐到项目左侧，而不是中心
+                    const targetScroll = closestItem.offsetLeft;
+                    
+                    container.scrollTo({
+                        left: targetScroll,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            // 初始时设置抓取样式
+            scrollContainer.style.cursor = 'grab';
+        });
+
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+    </script>
+</body>
+</html> 

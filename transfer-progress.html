@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 内容传输</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .device-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        .device-connection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+            width: 240px;
+        }
+        .device-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        .connection-line {
+            height: 2px;
+            background-color: #000000;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+        .connection-line:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: repeating-linear-gradient(90deg, #000, #000 6px, transparent 6px, transparent 12px);
+            animation: move 1s linear infinite;
+        }
+        @keyframes move {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(12px);
+            }
+        }
+        .phone-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .device-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+        .device-status {
+            font-size: 14px;
+            color: #666666;
+            margin-top: 4px;
+        }
+        .progress-section {
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 30px;
+        }
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #F5F5F5;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 65%;
+            background-color: #000000;
+            border-radius: 4px;
+        }
+        .file-list {
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 20px;
+        }
+        .file-item {
+            display: flex;
+            padding: 12px;
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .file-item.completed {
+            opacity: 0.6;
+        }
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #EAEAEA;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-name {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .file-size {
+            font-size: 12px;
+            color: #666666;
+        }
+        .file-status {
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .file-status.completed {
+            color: #000000;
+        }
+        .file-status.pending {
+            color: #999999;
+        }
+        .file-status.active {
+            color: #000000;
+        }
+        .action-buttons {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .cancel-button {
+            flex: 1;
+            padding: 14px 0;
+            border-radius: 8px;
+            background-color: #F5F5F5;
+            color: #666666;
+            font-size: 14px;
+            text-align: center;
+        }
+        .done-button {
+            flex: 1;
+            padding: 14px 0;
+            border-radius: 8px;
+            background-color: #000000;
+            color: #FFFFFF;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.5;
+        }
+        .transfer-info {
+            width: 100%;
+            max-width: 320px;
+            padding: 12px;
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666666;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            margin-right: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <div class="flex items-center">
+            <i class="fas fa-arrow-left back-button"></i>
+            <h1 class="text-xl font-bold">内容传输</h1>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 设备信息 -->
+        <div class="device-info">
+            <div class="device-connection">
+                <div class="phone-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="connection-line"></div>
+                <div class="device-icon">
+                    <i class="fas fa-tablet-alt"></i>
+                </div>
+            </div>
+            <div class="device-name">原物永伴·镜（N3-2201）</div>
+            <div class="device-status">传输中 · 蓝牙已连接</div>
+        </div>
+
+        <!-- 传输进度 -->
+        <div class="progress-section">
+            <div class="progress-title">
+                <span>整体进度</span>
+                <span>65%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- 传输文件列表 -->
+        <div class="file-list">
+            <div class="file-item completed">
+                <div class="file-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">星空少女.jpg</div>
+                    <div class="file-size">2.4MB</div>
+                </div>
+                <div class="file-status completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="file-item completed">
+                <div class="file-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">星空少女动态.mp4</div>
+                    <div class="file-size">4.8MB</div>
+                </div>
+                <div class="file-status completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="file-item">
+                <div class="file-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">动漫场景.mp4</div>
+                    <div class="file-size">8.6MB · 65%</div>
+                </div>
+                <div class="file-status active">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+            </div>
+
+            <div class="file-item">
+                <div class="file-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">赛博风格.jpg</div>
+                    <div class="file-size">3.2MB</div>
+                </div>
+                <div class="file-status pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 传输提示 -->
+        <div class="transfer-info">
+            传输过程中请保持蓝牙连接，不要离开当前页面或锁屏
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <div class="cancel-button">取消传输</div>
+            <div class="done-button">完成</div>
+        </div>
+    </div>
+</body>
+</html> 

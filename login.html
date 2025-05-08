@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 24px;
+            background-color: #000;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .wechat-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000000;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin-top: 40px;
+            width: 85%;
+            font-size: 16px;
+        }
+        .wechat-icon {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        .privacy-text {
+            color: #666666;
+            font-size: 12px;
+            margin-top: 20px;
+            max-width: 300px;
+        }
+        .privacy-link {
+            color: #000000;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-logo">
+            <i class="fas fa-magic text-white text-3xl"></i>
+        </div>
+        
+        <h1 class="text-2xl font-bold mb-3">原物永伴</h1>
+        <p class="text-gray-500 mb-6">将二次元图片转换为动态视频和多种艺术风格</p>
+        
+        <div class="w-16 h-1 bg-gray-100 rounded-full mb-10"></div>
+        
+        <button class="wechat-button">
+            <i class="fab fa-weixin wechat-icon"></i>
+            微信一键登录
+        </button>
+        
+        <p class="privacy-text">
+            登录即表示您同意我们的<a href="#" class="privacy-link">服务条款</a>和<a href="#" class="privacy-link">隐私政策</a>
+        </p>
+    </div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 为微信登录按钮添加点击事件
+        document.querySelector('.wechat-button').addEventListener('click', function() {
+            // 模拟登录过程
+            this.innerHTML = '<i class="fas fa-spinner fa-spin wechat-icon"></i> 登录中...';
+            this.disabled = true;
+            this.style.opacity = '0.8';
+            
+            // 2秒后完成登录
+            setTimeout(() => {
+                // 登录成功后跳转到首页
+                syncAndNavigate('home.html', '首页');
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

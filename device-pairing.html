@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 设备配对</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .scanning-animation {
+            width: 180px;
+            height: 180px;
+            background-color: #F5F5F5;
+            border-radius: 50%;
+            position: relative;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scanning-ring {
+            position: absolute;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            animation: scan 2s ease-out infinite;
+            opacity: 0;
+        }
+        .ring-1 {
+            width: 60%;
+            height: 60%;
+            animation-delay: 0s;
+        }
+        .ring-2 {
+            width: 80%;
+            height: 80%;
+            animation-delay: 0.5s;
+        }
+        .ring-3 {
+            width: 100%;
+            height: 100%;
+            animation-delay: 1s;
+        }
+        @keyframes scan {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        .device-icon {
+            font-size: 32px;
+            color: #000000;
+        }
+        .device-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .device-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 24px;
+        }
+        .device-list {
+            margin: 24px 0;
+        }
+        .device-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .device-info {
+            flex: 1;
+        }
+        .device-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .device-status {
+            font-size: 12px;
+            color: #666666;
+        }
+        .device-action {
+            padding: 8px 16px;
+            background-color: #000000;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .device-action.connecting {
+            background-color: #CCCCCC;
+        }
+        .no-device {
+            padding: 16px;
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: #666666;
+            font-size: 14px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .tip-box {
+            background-color: #F5F5F5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        .tip-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .tip-icon {
+            margin-right: 6px;
+            color: #000000;
+        }
+        .tip-content {
+            font-size: 12px;
+            color: #666666;
+            line-height: 1.5;
+        }
+        .tip-item {
+            margin-bottom: 6px;
+            display: flex;
+        }
+        .tip-number {
+            min-width: 16px;
+            margin-right: 4px;
+            color: #000000;
+        }
+        .refresh-button {
+            width: 100%;
+            padding: 12px 0;
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 1px solid #CCCCCC;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .refresh-icon {
+            margin-right: 6px;
+        }
+        .progress-indicator {
+            width: 100%;
+            height: 4px;
+            background-color: #F0F0F0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #3B7CFF;
+            width: 75%;
+            transition: width 0.3s ease;
+        }
+        
+        /* 添加自定义弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">添加设备</h1>
+        <i class="fa-solid fa-xmark text-lg cursor-pointer" onclick="syncAndNavigate('device.html', '设备页')"></i>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 扫描动画区域 -->
+        <div class="scanning-animation">
+            <div class="scanning-ring ring-1"></div>
+            <div class="scanning-ring ring-2"></div>
+            <div class="scanning-ring ring-3"></div>
+            <i class="fas fa-microchip device-icon"></i>
+        </div>
+
+        <div class="device-title">正在搜索附近设备</div>
+        <div class="device-subtitle">请确保您的原物永伴设备已开机并处于配对模式</div>
+
+        <!-- 设备列表 -->
+        <div class="device-list">
+            <div class="section-title">可用设备</div>
+            
+            <!-- 找到的设备 -->
+            <div class="device-item">
+                <div class="device-info">
+                    <div class="device-name">原物永伴·镜（N3-2201）</div>
+                    <div class="device-status">Bluetooth设备 · 未连接</div>
+                </div>
+                <button class="device-action">连接</button>
+            </div>
+
+            <div class="device-item">
+                <div class="device-info">
+                    <div class="device-name">原物永伴·屏（T4-1024）</div>
+                    <div class="device-status">Bluetooth设备 · 连接中...</div>
+                </div>
+                <button class="device-action connecting">
+                    <i class="fas fa-spinner fa-spin mr-1"></i>连接中
+                </button>
+            </div>
+
+            <!-- 无设备情况 -->
+            <div class="no-device">
+                未找到更多设备
+            </div>
+        </div>
+
+        <!-- 刷新按钮 -->
+        <button class="refresh-button">
+            <i class="fas fa-sync-alt refresh-icon"></i>
+            重新搜索设备
+        </button>
+
+        <!-- 帮助提示 -->
+        <div class="tip-box">
+            <div class="tip-title">
+                <i class="fas fa-lightbulb tip-icon"></i>
+                <span>连接帮助</span>
+            </div>
+            <div class="tip-content">
+                <div class="tip-item">
+                    <div class="tip-number">1.</div>
+                    <div>确保设备处于开机状态，且距离手机较近</div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-number">2.</div>
+                    <div>长按设备电源键3秒进入配对模式</div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-number">3.</div>
+                    <div>若设备显示配对码，请确认与手机上显示的一致</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 为连接按钮添加点击事件
+        document.querySelectorAll('.device-action').forEach(function(btn, index) {
+            if (!btn.classList.contains('connecting')) {
+                btn.addEventListener('click', function() {
+                    // 获取设备名称
+                    const deviceName = this.parentElement.querySelector('.device-name').textContent;
+                    
+                    // 更改按钮状态为连接中
+                    this.classList.add('connecting');
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>连接中';
+                    
+                    // 模拟连接过程（3秒后完成）
+                    setTimeout(() => {
+                        showToast('成功连接到设备：' + deviceName);
+                        // 连接成功后跳转到设备详情页
+                        window.location.href = 'device-detail.html';
+                    }, 3000);
+                });
+            }
+        });
+        
+        // 为刷新按钮添加点击事件
+        const refreshButton = document.querySelector('.refresh-button');
+        refreshButton.addEventListener('click', function() {
+            // 添加旋转动画
+            const refreshIcon = this.querySelector('.refresh-icon');
+            refreshIcon.classList.add('fa-spin');
+            
+            // 禁用按钮
+            this.disabled = true;
+            this.style.opacity = '0.7';
+            
+            // 模拟刷新过程（2秒后完成）
+            setTimeout(() => {
+                // 移除旋转动画
+                refreshIcon.classList.remove('fa-spin');
+                
+                // 恢复按钮状态
+                this.disabled = false;
+                this.style.opacity = '1';
+                
+                // 显示刷新提示
+                showToast('已重新搜索设备');
+            }, 2000);
+        });
+
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        // 模拟设备配对过程
+        document.addEventListener('DOMContentLoaded', function() {
+            const deviceName = localStorage.getItem('selectedDevice') || '幻次元设备';
+            document.getElementById('deviceName').textContent = deviceName;
+            
+            // 模拟配对过程
+            setTimeout(function() {
+                document.getElementById('connecting').style.display = 'none';
+                document.getElementById('connected').style.display = 'block';
+                document.querySelector('.progress-bar').style.width = '100%';
+                
+                const deviceElement = document.getElementById('deviceName');
+                deviceElement.classList.add('font-bold');
+                
+                // 显示连接成功消息
+                showToast('成功连接到设备：' + deviceName);
+                
+                // 自动跳转到设备详情页
+                setTimeout(function() {
+                    syncAndNavigate('device-detail.html', '设备详情');
+                }, 1500);
+            }, 2500);
+            
+            // 刷新按钮点击事件
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                showToast('已重新搜索设备');
+                
+                // 重置配对状态
+                document.getElementById('connecting').style.display = 'flex';
+                document.getElementById('connected').style.display = 'none';
+                document.querySelector('.progress-bar').style.width = '75%';
+                
+                const deviceElement = document.getElementById('deviceName');
+                deviceElement.classList.remove('font-bold');
+                
+                // 重新开始配对流程
+                setTimeout(function() {
+                    document.getElementById('connecting').style.display = 'none';
+                    document.getElementById('connected').style.display = 'block';
+                    document.querySelector('.progress-bar').style.width = '100%';
+                    
+                    deviceElement.classList.add('font-bold');
+                    
+                    showToast('成功连接到设备：' + deviceName);
+                    
+                    setTimeout(function() {
+                        syncAndNavigate('device-detail.html', '设备详情');
+                    }, 1500);
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html> 

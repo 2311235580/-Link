@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 社区</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .search-icon {
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-icon:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 16px;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .masonry {
+            column-count: 2;
+            column-gap: 16px;
+            width: 100%;
+        }
+        .item {
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 16px;
+            break-inside: avoid;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #F5F5F5;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            position: relative;
+        }
+        .item:active {
+            transform: scale(0.96);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .item-image {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-color: #EEEEEE;
+        }
+        /* 为不同卡片设置不同高度，创造不规则瀑布流效果 */
+        .item:nth-child(1) .item-image {
+            min-height: 180px;
+        }
+        .item:nth-child(2) .item-image {
+            min-height: 120px;
+        }
+        .item:nth-child(3) .item-image {
+            min-height: 200px;
+        }
+        .item:nth-child(4) .item-image {
+            min-height: 140px;
+        }
+        .item:nth-child(5) .item-image {
+            min-height: 160px;
+        }
+        .item:nth-child(6) .item-image {
+            min-height: 190px;
+        }
+        .item:nth-child(7) .item-image {
+            min-height: 130px;
+        }
+        .item:nth-child(8) .item-image {
+            min-height: 170px;
+        }
+        .placeholder-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+        .item-content {
+            padding: 10px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #F5F5F5;
+            margin-bottom: 16px;
+            padding: 0 16px;
+        }
+        .tab {
+            padding: 12px 0;
+            margin-right: 24px;
+            font-size: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .tab.active {
+            color: #000000;
+            font-weight: 500;
+        }
+        .tab.active:after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #000000;
+        }
+        .tab.inactive {
+            color: #666666;
+        }
+        .tab:active {
+            opacity: 0.7;
+        }
+        .tab-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F5F5;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 0;
+            transition: opacity 0.2s;
+        }
+        .tab-item:active {
+            opacity: 0.7;
+        }
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .active {
+            color: #000000;
+        }
+        .inactive {
+            color: #CCCCCC;
+        }
+        .username {
+            font-size: 12px;
+        }
+        .interactions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+        .like-count {
+            font-size: 12px;
+            color: #666666;
+            display: flex;
+            align-items: center;
+        }
+        .avatar {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background-color: #CCCCCC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #999999;
+        }
+        .empty-notice {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            display: none;
+        }
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .hot-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+        .hot-tag i {
+            color: #FF4757;
+            margin-right: 3px;
+        }
+        /* 悬浮发布按钮样式 */
+        .float-publish-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #000000;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .float-publish-btn i {
+            font-size: 22px;
+        }
+        .float-publish-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .float-publish-btn.hidden {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                transform: scale(1);
+            }
+        }
+        .float-publish-btn.pulse {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">社区</h1>
+        <div class="search-icon">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+        </div>
+    </div>
+
+    <!-- 内容类型选项卡 -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(this, 'recommended')">
+            推荐
+        </div>
+        <div class="tab inactive" onclick="switchTab(this, 'popular')">
+            热门
+        </div>
+        <div class="tab inactive" onclick="switchTab(this, 'latest')">
+            最新
+        </div>
+    </div>
+
+    <!-- 主内容区域 - 推荐页 -->
+    <div class="content" id="recommended-content">
+        <div class="masonry">
+            <!-- 作品项 1 - 有点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <span>作品1</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">幻想大师</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">动态转换</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>62</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品项 2 - 无点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-paint-brush placeholder-icon"></i>
+                    <span>作品2</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">二次创作者</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">赛博风格</span>
+                        <div class="like-count">
+                            <i class="fa-regular fa-heart mr-1"></i>
+                            <span>0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品项 3 - 有点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-palette placeholder-icon"></i>
+                    <span>作品3</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">像素艺术家</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">水彩风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>127</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品项 4 - 无点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-cubes placeholder-icon"></i>
+                    <span>作品4</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">幻迹绘师</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">像素风格</span>
+                        <div class="like-count">
+                            <i class="fa-regular fa-heart mr-1"></i>
+                            <span>0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品项 5 - 有点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-video placeholder-icon"></i>
+                    <span>作品5</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">动态创作者</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">动漫风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>76</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 作品项 6 - 无点赞 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="item-image">
+                    <i class="fas fa-magic placeholder-icon"></i>
+                    <span>作品6</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">创作达人</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">古风效果</span>
+                        <div class="like-count">
+                            <i class="fa-regular fa-heart mr-1"></i>
+                            <span>0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 热门页内容 -->
+    <div class="content" id="popular-content" style="display: none;">
+        <div class="masonry">
+            <!-- 热门作品项 1 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <span>热门作品1</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">热门创作者</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">动态转换</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>182</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门作品项 2 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-paint-brush placeholder-icon"></i>
+                    <span>热门作品2</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">人气创作家</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">赛博风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>156</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门作品项 3 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-palette placeholder-icon"></i>
+                    <span>热门作品3</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">人气王</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">水彩风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>223</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门作品项 4 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-cubes placeholder-icon"></i>
+                    <span>热门作品4</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">热图设计师</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">像素风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>176</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门作品项 5 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-video placeholder-icon"></i>
+                    <span>热门作品5</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">动画师</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">动漫风格</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>148</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 热门作品项 6 -->
+            <div class="item" onclick="window.location.href='artwork-detail.html'">
+                <div class="hot-tag">
+                    <i class="fas fa-fire"></i>
+                    <span>热门</span>
+                </div>
+                <div class="item-image">
+                    <i class="fas fa-magic placeholder-icon"></i>
+                    <span>热门作品6</span>
+                </div>
+                <div class="item-content">
+                    <div class="flex items-center">
+                        <div class="avatar"><i class="fas fa-user"></i></div>
+                        <span class="username">国风大师</span>
+                    </div>
+                    <div class="interactions">
+                        <span class="text-xs text-gray-500">古风效果</span>
+                        <div class="like-count">
+                            <i class="fa-solid fa-heart mr-1" style="color: #FF4757;"></i>
+                            <span>195</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最新页内容 - 空状态 -->
+    <div class="content" id="latest-content" style="display: none;">
+        <div class="masonry" style="display: none;"></div>
+        <!-- 空状态提示 -->
+        <div class="empty-notice" style="display: flex;">
+            <i class="fas fa-image empty-icon"></i>
+            <p>暂无内容</p>
+            <p class="text-xs mt-2 opacity-70">快去上传你的第一个作品吧</p>
+        </div>
+    </div>
+
+    <!-- 底部标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item" onclick="navigateTo('home.html', '首页')">
+            <i class="fa-solid fa-house tab-icon inactive"></i>
+            <span class="inactive">首页</span>
+        </div>
+        <div class="tab-item">
+            <i class="fa-solid fa-compass tab-icon active"></i>
+            <span class="active">社区</span>
+        </div>
+        <div class="tab-item" onclick="navigateTo('device.html', '设备')">
+            <i class="fa-solid fa-microchip tab-icon inactive"></i>
+            <span class="inactive">设备</span>
+        </div>
+        <div class="tab-item" onclick="navigateTo('profile.html', '我的')">
+            <i class="fa-solid fa-user tab-icon inactive"></i>
+            <span class="inactive">我的</span>
+        </div>
+    </div>
+    
+    <!-- 悬浮发布按钮 -->
+    <div class="float-publish-btn" id="publishBtn">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+    
+    <script>
+        function switchTab(element, tab) {
+            // 移除所有选项卡的active类
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.classList.add('inactive');
+            });
+            
+            // 添加当前选项卡的active类
+            element.classList.remove('inactive');
+            element.classList.add('active');
+            
+            // 隐藏所有内容区域
+            document.getElementById('recommended-content').style.display = 'none';
+            document.getElementById('popular-content').style.display = 'none';
+            document.getElementById('latest-content').style.display = 'none';
+            
+            // 显示对应的内容区域
+            document.getElementById(tab + '-content').style.display = 'block';
+        }
+        
+        function navigateTo(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 导航到目标页面
+            window.location.href = page;
+        }
+        
+        // 浮动发布按钮交互逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentArea = document.querySelector('.content');
+            const publishBtn = document.getElementById('publishBtn');
+            let lastScrollTop = 0;
+            let scrollTimer = null;
+            let isScrolling = false;
+            
+            // 为发布按钮添加点击事件
+            publishBtn.addEventListener('click', function() {
+                // 设置localStorage以记录来源页面
+                localStorage.setItem('entrySource', 'community');
+                // 跳转到创作页面并传递来源参数
+                navigateTo('creation.html?source=community', '图片上传');
+            });
+            
+            // 监听滚动事件
+            contentArea.addEventListener('scroll', function() {
+                isScrolling = true;
+                const scrollTop = contentArea.scrollTop;
+                
+                // 判断滚动方向，滚动超过一定阈值才触发
+                if (Math.abs(scrollTop - lastScrollTop) > 10) {
+                    if (scrollTop > lastScrollTop) {
+                        // 向下滚动，隐藏按钮
+                        publishBtn.classList.add('hidden');
+                        publishBtn.classList.remove('pulse');
+                    } else {
+                        // 向上滚动，显示按钮
+                        publishBtn.classList.remove('hidden');
+                    }
+                    lastScrollTop = scrollTop;
+                }
+                
+                // 重置滚动定时器
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(function() {
+                    isScrolling = false;
+                    // 滚动停止后显示按钮
+                    publishBtn.classList.remove('hidden');
+                    
+                    // 停留1秒后添加脉冲动画
+                    setTimeout(function() {
+                        if (!isScrolling) {
+                            publishBtn.classList.add('pulse');
+                        }
+                    }, 1000);
+                }, 150);
+            });
+            
+            // 初次进入时，短暂延迟后触发脉冲动画
+            setTimeout(function() {
+                publishBtn.classList.add('pulse');
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

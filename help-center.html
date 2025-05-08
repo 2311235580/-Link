@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 帮助中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border-radius: 8px;
+            border: none;
+            background-color: #ffffff;
+            font-size: 14px;
+        }
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        .category-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .category-item {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .category-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .category-count {
+            font-size: 12px;
+            color: #666;
+        }
+        .faq-section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .section-icon {
+            margin-right: 8px;
+        }
+        .faq-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-button {
+            margin-right: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <div class="flex items-center">
+            <i class="fas fa-arrow-left back-button"></i>
+            <h1 class="text-xl font-bold">帮助中心</h1>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索问题">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- 分类导航 -->
+        <div class="category-section">
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="category-title">设备连接</div>
+                <div class="category-count">8个问题</div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <div class="category-title">AI创作</div>
+                <div class="category-count">12个问题</div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="category-title">内容传输</div>
+                <div class="category-count">6个问题</div>
+            </div>
+            <div class="category-item">
+                <div class="category-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <div class="category-title">账户管理</div>
+                <div class="category-count">5个问题</div>
+            </div>
+        </div>
+
+        <!-- 常见问题 -->
+        <div class="faq-section">
+            <div class="section-title">
+                <i class="fas fa-star section-icon"></i>
+                <span>热门问题</span>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>如何将原物永伴连接到设备？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>创作的图片有尺寸限制吗？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>为什么我的设备无法被发现？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>如何提高AI创作的质量？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>内容传输中断怎么办？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最新问题 -->
+        <div class="faq-section">
+            <div class="section-title">
+                <i class="fas fa-clock section-icon"></i>
+                <span>最新更新</span>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>如何使用新增的像素风格功能？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>多设备同时连接的最佳实践</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>社区作品分享有哪些注意事项？</span>
+                    <i class="fas fa-angle-right text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

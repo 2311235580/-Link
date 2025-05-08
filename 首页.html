@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴微信小程序原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            margin: 0;
+            overflow: hidden; /* 修改为hidden，防止整个页面出现滚动条 */
+            padding-top: 60px; /* 为固定标题腾出空间，确保与标题高度一致 */
+        }
+        .title {
+            padding: 16px;
+            text-align: center;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            margin: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            width: 100%;
+            height: 60px; /* 明确指定高度 */
+            box-sizing: border-box; /* 确保padding包含在高度内 */
+            display: flex; /* 使用flex布局 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            line-height: 1; /* 确保行高合适 */
+            font-size: 1.25rem; /* 确保字体大小合适 */
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+            margin-top: 0; /* 移除这里的margin-top，因为已经在body上设置了padding-top */
+            position: relative; /* 添加相对定位 */
+            top: 0; /* 确保紧贴顶部 */
+        }
+        .nav-sidebar {
+            width: 200px;
+            background-color: #ffffff;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
+            flex-shrink: 0;
+            position: fixed;
+            top: 60px; /* 与标题底部对齐 */
+            left: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.2) #f5f5f5;
+            z-index: 1;
+            margin-top: 0; /* 确保没有顶部边距 */
+            padding-top: 0; /* 确保没有顶部内边距 */
+        }
+        .nav-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-sidebar::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+        .nav-sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            margin-left: 200px;
+            width: calc(100% - 200px);
+            padding-top: 0; /* 确保没有多余的顶部间距 */
+            overflow: hidden; /* 防止content-wrapper自身出现滚动条 */
+            position: relative; /* 添加相对定位 */
+            top: 0; /* 确保紧贴顶部 */
+        }
+        
+        .phone-wrapper {
+            display: flex;
+            flex-direction: column; /* 改为纵向布局 */
+            align-items: center; /* 水平居中 */
+            padding: 0; /* 移除内边距 */
+            flex: 0.6;
+            position: relative;
+            height: calc(100vh - 60px); /* 确保高度与main-container一致 */
+            overflow-y: auto; /* 允许垂直滚动 */
+            overflow-x: hidden; /* 禁止水平滚动 */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.2) #f5f5f5;
+        }
+        
+        /* 手机预览区域的滚动条样式 */
+        .phone-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .phone-wrapper::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+        
+        .phone-wrapper::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+        
+        /* 手机容器样式 */
+        .phone-container {
+            width: 375px; /* 保持原始宽度不变 */
+            height: 812px; /* 保持原始高度不变 */
+            position: relative;
+            overflow: hidden;
+            background-color: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+            border: 10px solid #000000;
+            flex-shrink: 0; /* 防止压缩 */
+            margin: 30px 0 60px 0; /* 上下边距确保完全可见 */
+        }
+        
+        .requirements-panel {
+            width: auto;
+            flex: 1;
+            background-color: #ffffff;
+            border-left: 1px solid #eee;
+            padding: 24px;
+            overflow-y: auto; /* 保持auto，确保内容过多时可以滚动 */
+            height: 100%;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.05);
+            box-sizing: border-box; /* 确保padding包含在高度内 */
+            max-height: calc(100vh - 60px); /* 确保最大高度不超过可视区域 */
+            /* 美化滚动条 */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.2) #f5f5f5;
+        }
+        
+        /* 针对WebKit浏览器的滚动条样式 */
+        .requirements-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .requirements-panel::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+        
+        .requirements-panel::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+        
+        /* 确保需求区域内的内容不会导致水平滚动 */
+        .req-section {
+            margin-bottom: 16px;
+            width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+        
+        .req-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-width: 100%;
+        }
+        .page-container {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .page-section {
+            margin-bottom: 16px;
+            padding: 12px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        .section-icon {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-item:hover {
+            background-color: #f5f5f5;
+        }
+        .menu-item.active {
+            background-color: #000;
+            color: #fff;
+        }
+        .item-icon {
+            margin-right: 8px;
+            font-size: 12px;
+            width: 16px;
+            text-align: center;
+        }
+        .item-text {
+            flex: 1;
+        }
+        .item-edit {
+            opacity: 0;
+            margin-left: 4px;
+            font-size: 11px;
+            color: #999;
+            transition: all 0.2s;
+        }
+        .menu-item:hover .item-edit {
+            opacity: 1;
+        }
+        .footer {
+            padding: 12px;
+            text-align: center;
+            font-size: 11px;
+            color: #666666;
+            border-top: 1px solid #f0f0f0;
+        }
+        .page-info {
+            position: sticky; /* 改为粘性定位 */
+            bottom: 10px; /* 距离底部距离 */
+            left: 50%; 
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 5;
+            margin-top: -30px; /* 向上偏移 */
+            display: inline-block;
+        }
+        .req-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .req-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .req-section {
+            margin-bottom: 16px;
+        }
+        .req-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .req-list {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .req-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #444;
+        }
+        .req-list li:before {
+            content: "•";
+            margin-right: 8px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .req-list li strong {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .menu-category {
+            font-size: 14px;
+            font-weight: 700;
+            color: #000;
+            padding: 14px 14px 10px;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            letter-spacing: 0.05em;
+            border-left: 4px solid #000;
+            background-color: #f8f8f8;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border-radius: 0 4px 4px 0;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .category-edit {
+            opacity: 0;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-category:hover .category-edit {
+            opacity: 1;
+        }
+        .edit-input {
+            border: none;
+            background: #fff;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            width: 100%;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #000000;
+        }
+        /* 为active状态的菜单项添加特殊编辑样式 */
+        .menu-item.active .edit-input {
+            background-color: #f0f0f0;
+            border-color: #888;
+            color: #000000;
+        }
+        /* 恢复可编辑相关样式 */
+        .editable-content {
+            outline: none;
+            border: 1px solid transparent;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            min-height: 40px;
+        }
+        .editable-content:focus {
+            border-color: #e0e0e0;
+            background-color: #fafafa;
+        }
+        .save-button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 13px;
+            opacity: 0;
+            transition: all 0.2s;
+            float: right;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .save-button.visible {
+            opacity: 1;
+        }
+        .save-button:hover {
+            background-color: #222;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        .edit-notification {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: inline-block;
+        }
+        .edit-notification.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title text-xl font-bold">原物永伴微信小程序原型</h1>
+    <button id="clearStorageBtn" style="position: fixed; right: 20px; top: 20px; background-color: #3B7CFF; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 14px; cursor: pointer; z-index: 1000; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">清除缓存</button>
+    
+    <div class="main-container">
+        <!-- 左侧菜单导航栏 -->
+        <div class="nav-sidebar">
+            <div class="page-section">
+                <div class="menu-category">
+                    <span class="category-name">核心页面</span>
+                    <i class="fas fa-edit category-edit"></i>
+                </div>
+                <div class="menu-item active" onclick="changePage('home.html', '首页')">
+                    <i class="fas fa-home item-icon"></i>
+                    <span class="item-text">首页</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('login.html', '登录页')">
+                    <i class="fas fa-sign-in-alt item-icon"></i>
+                    <span class="item-text">登录页</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('community.html', '社区页')">
+                    <i class="fas fa-compass item-icon"></i>
+                    <span class="item-text">社区页</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('device.html', '设备页')">
+                    <i class="fas fa-microchip item-icon"></i>
+                    <span class="item-text">设备页</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('profile.html', '个人中心')">
+                    <i class="fas fa-user item-icon"></i>
+                    <span class="item-text">个人中心</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+            </div>
+            
+            <div class="page-section">
+                <div class="menu-category">
+                    <span class="category-name">AI创作流程</span>
+                    <i class="fas fa-edit category-edit"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('creation.html', '图片上传')">
+                    <i class="fas fa-upload item-icon"></i>
+                    <span class="item-text">图片上传</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('creation-processing.html', 'AI处理中')">
+                    <i class="fas fa-spinner item-icon"></i>
+                    <span class="item-text">处理中</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('creation-failed.html', '处理失败')">
+                    <i class="fas fa-exclamation-triangle item-icon"></i>
+                    <span class="item-text">处理失败</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('creation-result.html', '创作结果')">
+                    <i class="fas fa-check-circle item-icon"></i>
+                    <span class="item-text">创作结果</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+            </div>
+            
+            <div class="page-section">
+                <div class="menu-category">
+                    <span class="category-name">设备管理</span>
+                    <i class="fas fa-edit category-edit"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('device-pairing.html', '设备配对')">
+                    <i class="fas fa-plug item-icon"></i>
+                    <span class="item-text">设备配对</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('device-detail.html', '设备详情')">
+                    <i class="fas fa-info-circle item-icon"></i>
+                    <span class="item-text">设备详情</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('transfer-progress.html', '内容传输')">
+                    <i class="fas fa-exchange-alt item-icon"></i>
+                    <span class="item-text">内容传输</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+            </div>
+            
+            <div class="page-section">
+                <div class="menu-category">
+                    <span class="category-name">内容管理</span>
+                    <i class="fas fa-edit category-edit"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('artwork-detail.html', '作品详情')">
+                    <i class="fas fa-paint-brush item-icon"></i>
+                    <span class="item-text">作品详情</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('artwork-edit.html', '作品编辑')">
+                    <i class="fas fa-edit item-icon"></i>
+                    <span class="item-text">作品编辑</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+            </div>
+            
+            <div class="page-section">
+                <div class="menu-category">
+                    <span class="category-name">用户与帮助</span>
+                    <i class="fas fa-edit category-edit"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('profile-edit.html', '资料编辑')">
+                    <i class="fas fa-user-edit item-icon"></i>
+                    <span class="item-text">资料编辑</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+                <div class="menu-item" onclick="changePage('help-center.html', '帮助中心')">
+                    <i class="fas fa-question-circle item-icon"></i>
+                    <span class="item-text">帮助中心</span>
+                    <i class="fas fa-pen item-edit" onclick="editMenuItem(event, this)"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- 中间原型图区域 -->
+            <div class="phone-wrapper">
+                <div class="phone-scroll-container">
+                    <div class="phone-container">
+                        <iframe id="pageFrame" class="page-container" src="home.html"></iframe>
+                    </div>
+                    <div class="page-info" id="pageInfo">当前页面: 首页</div>
+                </div>
+            </div>
+            
+            <!-- 右侧需求描述区域 -->
+            <div class="requirements-panel">
+                <div class="req-title">
+                    <div>页面需求描述 - 首页</div>
+                    <button id="saveButton" class="save-button">保存更改</button>
+                </div>
+                <span id="editNotification" class="edit-notification">已更改，请保存</span>
+                
+                <div class="req-description editable-content" contenteditable="true" id="reqDescription">
+                    首页是用户进入小程序的主要入口页面，承载核心功能导航和内容展示。本页面需要实现AI创作流程入口、多种效果选择、创作灵感浏览以及热门作品展示等核心功能，为用户提供清晰的操作路径和内容发现机制。
+                </div>
+                
+                <div class="req-section" id="pageRequirements">
+                    <div class="req-section-title">页面功能结构</div>
+                    <ul class="req-list editable-content" contenteditable="true" id="reqList">
+                        <li><strong>顶部导航栏</strong> - 包含应用名称展示和消息通知入口，消息入口需支持未读消息提示功能（红点标记）</li>
+                        <li><strong>创作入口横幅</strong> - 主要功能入口，点击后直接跳转到图片上传页面（creation.html）</li>
+                        <li><strong>AI效果选择区</strong> - 展示四种核心效果（动态视频、动漫风格、水彩效果、像素风格），每个选项独立可点击</li>
+                        <li><strong>创作灵感区</strong> - 横向可滑动列表，展示推荐创作样例，支持查看更多功能</li>
+                        <li><strong>热门作品区</strong> - 网格布局展示热门社区作品，支持查看更多功能</li>
+                        <li><strong>底部标签栏</strong> - 应用主导航，包含首页、社区、设备、个人中心四个一级入口</li>
+                    </ul>
+                </div>
+                
+                <div class="req-section">
+                    <div class="req-section-title">功能点详细需求</div>
+                    <ul class="req-list editable-content" contenteditable="true" id="principlesList">
+                        <li><strong>消息通知功能</strong> - 点击顶部通知图标跳转至notification-center.html页面；当有未读消息时，图标右上角显示红点提示；消息数据需后端API获取</li>
+                        <li><strong>创作入口</strong> - 点击后直接进入创作流程第一步（图片上传页），需记录来源为"首页"，用于后续流程完成后的返回路径判断</li>
+                        <li><strong>AI效果选择</strong> - 每个效果选项点击后需携带对应效果类型参数（effectType）跳转至创作页面，并在创作页面中自动预选该效果</li>
+                        <li><strong>创作灵感浏览</strong> - 支持手势横向滑动，内容从API获取；点击单个灵感项目后，需跳转至对应作品详情页或基于该灵感样式的创作页</li>
+                        <li><strong>热门作品展示</strong> - 从API获取最新热门作品数据；点击作品跳转至artwork-detail.html页面并传递作品ID；点击"查看更多"跳转至community.html的热门作品标签页</li>
+                        <li><strong>底部导航</strong> - 当前页面对应标签高亮显示；点击其他标签跳转至对应页面（社区/设备/个人中心）；需支持应用内返回首页时自动高亮首页标签</li>
+                    </ul>
+                </div>
+                
+                <div class="req-section">
+                    <div class="req-section-title">交互流程与业务逻辑</div>
+                    <ul class="req-list editable-content" contenteditable="true" id="interactionsList">
+                        <li><strong>页面初始化流程</strong> - 页面加载时需同时请求：1)用户未读消息状态；2)推荐创作灵感列表；3)热门作品列表；若请求失败需展示重试选项</li>
+                        <li><strong>创作流程入口逻辑</strong> - 用户可通过两种方式进入创作流程：1)点击顶部创作横幅；2)点击效果选择区中的具体效果。两种方式都将跳转到creation.html但携带参数不同</li>
+                        <li><strong>数据刷新机制</strong> - 支持下拉刷新操作，刷新后重新请求创作灵感和热门作品数据；数据缓存有效期为30分钟，超过后需重新请求</li>
+                        <li><strong>用户登录状态处理</strong> - 检测用户登录状态，未登录用户仍可浏览首页内容，但点击创作入口、查看通知等功能时需引导登录</li>
+                        <li><strong>浏览历史记录</strong> - 记录用户查看过的热门作品，用于后续个性化推荐，数据存储在本地并定期同步至服务端</li>
+                        <li><strong>异常状态处理</strong> - 网络异常情况下，创作灵感和热门作品区域需显示加载失败状态和重试按钮；重试仅重新加载对应区域内容</li>
+                    </ul>
+                </div>
+                
+                <div class="req-section">
+                    <div class="req-section-title">功能优先级与依赖关系</div>
+                    <ul class="req-list editable-content" contenteditable="true" id="prioritiesList">
+                        <li><strong>核心功能(P0)</strong> - 创作入口、效果选择、底部导航必须确保工作正常，这是用户核心路径</li>
+                        <li><strong>重要功能(P1)</strong> - 热门作品展示、创作灵感浏览，这些功能影响内容发现</li>
+                        <li><strong>次要功能(P2)</strong> - 消息通知、浏览历史记录等辅助功能</li>
+                        <li><strong>功能依赖关系</strong> - 效果选择区功能依赖于创建接口的可用性；热门作品展示依赖于社区内容API；用户未读消息状态依赖于消息系统API</li>
+                        <li><strong>降级策略</strong> - 当创作API不可用时，创作入口和效果选择区应显示维护状态；当内容API不可用时，创作灵感和热门作品区域可显示本地缓存内容</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 清除本地存储的功能
+        document.getElementById('clearStorageBtn').addEventListener('click', function() {
+            localStorage.removeItem('pageRequirementsEdited');
+            localStorage.removeItem('menuItemsEdited');
+            alert('缓存已清除，页面将刷新！');
+            location.reload();
+        });
+
+        // 编辑菜单项功能
+        function editMenuItem(event, element) {
+            event.stopPropagation(); // 阻止点击事件冒泡
+            
+            const menuItem = element.parentElement;
+            const textSpan = menuItem.querySelector('.item-text');
+            const currentText = textSpan.textContent;
+            const isActive = menuItem.classList.contains('active');
+            
+            // 创建输入框
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentText;
+            input.className = 'edit-input';
+            input.style.width = 'calc(100% - 40px)';
+            
+            // 针对active状态的菜单项设置特殊样式
+            if (isActive) {
+                input.style.backgroundColor = '#f0f0f0';
+                input.style.color = '#000000';
+                input.style.borderColor = '#888';
+            }
+            
+            // 替换文本为输入框
+            textSpan.innerHTML = '';
+            textSpan.appendChild(input);
+            
+            // 聚焦到输入框
+            input.focus();
+            
+            // 添加保存编辑的事件
+            input.addEventListener('blur', saveEdit);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveEdit();
+                }
+            });
+            
+            function saveEdit() {
+                const newText = input.value.trim();
+                if (newText) {
+                    // 保存新的文本
+                    textSpan.textContent = newText;
+                    
+                    // 保存到本地存储
+                    saveMenuItemsToStorage();
+                    
+                    // 显示保存成功提示
+                    showSaveNotification();
+                } else {
+                    // 如果为空，恢复原来的文本
+                    textSpan.textContent = currentText;
+                }
+            }
+        }
+        
+        // 初始化菜单分类编辑功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有分类标题添加编辑事件
+            document.querySelectorAll('.category-edit').forEach(function(editIcon) {
+                editIcon.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    const category = this.parentElement;
+                    const nameSpan = category.querySelector('.category-name');
+                    const currentText = nameSpan.textContent;
+                    
+                    // 创建输入框
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentText;
+                    input.className = 'edit-input';
+                    input.style.width = 'calc(100% - 30px)';
+                    
+                    // 替换文本为输入框
+                    nameSpan.innerHTML = '';
+                    nameSpan.appendChild(input);
+                    
+                    // 聚焦到输入框
+                    input.focus();
+                    
+                    // 添加保存编辑的事件
+                    input.addEventListener('blur', saveCategoryEdit);
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            saveCategoryEdit();
+                        }
+                    });
+                    
+                    function saveCategoryEdit() {
+                        const newText = input.value.trim();
+                        if (newText) {
+                            nameSpan.textContent = newText;
+                            saveMenuItemsToStorage();
+                            showSaveNotification();
+                        } else {
+                            nameSpan.textContent = currentText;
+                        }
+                    }
+                });
+            });
+            
+            // 加载保存的菜单项文本
+            loadMenuItemsFromStorage();
+        });
+        
+        // 保存菜单项到本地存储
+        function saveMenuItemsToStorage() {
+            const menuItems = {};
+            
+            // 保存所有菜单分类
+            document.querySelectorAll('.menu-category').forEach(function(category, index) {
+                const categoryName = category.querySelector('.category-name').textContent;
+                menuItems['category_' + index] = categoryName;
+            });
+            
+            // 保存所有菜单项
+            document.querySelectorAll('.menu-item').forEach(function(item, index) {
+                const itemText = item.querySelector('.item-text').textContent;
+                menuItems['item_' + index] = itemText;
+            });
+            
+            localStorage.setItem('menuItemsEdited', JSON.stringify(menuItems));
+        }
+        
+        // 从本地存储加载菜单项
+        function loadMenuItemsFromStorage() {
+            const storedItems = localStorage.getItem('menuItemsEdited');
+            if (storedItems) {
+                const menuItems = JSON.parse(storedItems);
+                
+                // 恢复所有菜单分类
+                document.querySelectorAll('.menu-category').forEach(function(category, index) {
+                    const storedName = menuItems['category_' + index];
+                    if (storedName) {
+                        category.querySelector('.category-name').textContent = storedName;
+                    }
+                });
+                
+                // 恢复所有菜单项
+                document.querySelectorAll('.menu-item').forEach(function(item, index) {
+                    const storedText = menuItems['item_' + index];
+                    if (storedText) {
+                        item.querySelector('.item-text').textContent = storedText;
+                    }
+                });
+            }
+        }
+        
+        // 显示保存成功提示
+        function showSaveNotification() {
+            const notification = document.createElement('div');
+            notification.textContent = '修改已保存';
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
+            notification.style.backgroundColor = '#4CAF50';
+            notification.style.color = 'white';
+            notification.style.padding = '8px 16px';
+            notification.style.borderRadius = '4px';
+            notification.style.fontSize = '14px';
+            notification.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+            notification.style.zIndex = '10000';
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            
+            document.body.appendChild(notification);
+            
+            // 显示和自动隐藏
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 2000);
+            }, 10);
+        }
+
+        // 存储不同页面的需求描述内容
+        const pageRequirementsData = {
+            '首页': {
+                'title': '页面功能结构',
+                'description': '首页是用户进入小程序的主要入口页面，承载核心功能导航和内容展示。本页面需要实现AI创作流程入口、多种效果选择、创作灵感浏览以及热门作品展示等核心功能，为用户提供清晰的操作路径和内容发现机制。',
+                'requirements': [
+                    '<strong>顶部导航栏</strong> - 包含应用名称展示和消息通知入口，消息入口需支持未读消息提示功能（红点标记）',
+                    '<strong>创作入口横幅</strong> - 主要功能入口，点击后直接跳转到图片上传页面（creation.html）',
+                    '<strong>AI效果选择区</strong> - 展示四种核心效果（动态视频、动漫风格、水彩效果、像素风格），每个选项独立可点击',
+                    '<strong>创作灵感区</strong> - 横向可滑动列表，展示推荐创作样例，支持查看更多功能',
+                    '<strong>热门作品区</strong> - 网格布局展示热门社区作品，支持查看更多功能',
+                    '<strong>底部标签栏</strong> - 应用主导航，包含首页、社区、设备、个人中心四个一级入口'
+                ],
+                'principles': [
+                    '<strong>消息通知功能</strong> - 点击顶部通知图标跳转至notification-center.html页面；当有未读消息时，图标右上角显示红点提示；消息数据需后端API获取',
+                    '<strong>创作入口</strong> - 点击后直接进入创作流程第一步（图片上传页），需记录来源为"首页"，用于后续流程完成后的返回路径判断',
+                    '<strong>AI效果选择</strong> - 每个效果选项点击后需携带对应效果类型参数（effectType）跳转至创作页面，并在创作页面中自动预选该效果',
+                    '<strong>创作灵感浏览</strong> - 支持手势横向滑动，内容从API获取；点击单个灵感项目后，需跳转至对应作品详情页或基于该灵感样式的创作页',
+                    '<strong>热门作品展示</strong> - 从API获取最新热门作品数据；点击作品跳转至artwork-detail.html页面并传递作品ID；点击"查看更多"跳转至community.html的热门作品标签页',
+                    '<strong>底部导航</strong> - 当前页面对应标签高亮显示；点击其他标签跳转至对应页面（社区/设备/个人中心）；需支持应用内返回首页时自动高亮首页标签'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载时需同时请求：1)用户未读消息状态；2)推荐创作灵感列表；3)热门作品列表；若请求失败需展示重试选项',
+                    '<strong>创作流程入口逻辑</strong> - 用户可通过两种方式进入创作流程：1)点击顶部创作横幅；2)点击效果选择区中的具体效果。两种方式都将跳转到creation.html但携带参数不同',
+                    '<strong>数据刷新机制</strong> - 支持下拉刷新操作，刷新后重新请求创作灵感和热门作品数据；数据缓存有效期为30分钟，超过后需重新请求',
+                    '<strong>用户登录状态处理</strong> - 检测用户登录状态，未登录用户仍可浏览首页内容，但点击创作入口、查看通知等功能时需引导登录',
+                    '<strong>浏览历史记录</strong> - 记录用户查看过的热门作品，用于后续个性化推荐，数据存储在本地并定期同步至服务端',
+                    '<strong>异常状态处理</strong> - 网络异常情况下，创作灵感和热门作品区域需显示加载失败状态和重试按钮；重试仅重新加载对应区域内容'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 创作入口、效果选择、底部导航必须确保工作正常，这是用户核心路径',
+                    '<strong>重要功能(P1)</strong> - 热门作品展示、创作灵感浏览，这些功能影响内容发现',
+                    '<strong>次要功能(P2)</strong> - 消息通知、浏览历史记录等辅助功能',
+                    '<strong>功能依赖关系</strong> - 效果选择区功能依赖于创建接口的可用性；热门作品展示依赖于社区内容API；用户未读消息状态依赖于消息系统API',
+                    '<strong>降级策略</strong> - 当创作API不可用时，创作入口和效果选择区应显示维护状态；当内容API不可用时，创作灵感和热门作品区域可显示本地缓存内容'
+                ]
+            },
+            '登录页': {
+                'title': '页面功能结构',
+                'description': '登录页是用户进入应用的第一步，采用微信授权登录方式实现快速验证用户身份并获取基本信息，确保用户能便捷进入应用并享受完整功能。',
+                'requirements': [
+                    '<strong>微信授权区域</strong> - 显示应用logo及微信一键登录按钮，点击后调用微信授权API',
+                    '<strong>用户协议区域</strong> - 展示用户协议和隐私政策链接，并提供勾选同意的选项',
+                    '<strong>自动登录机制</strong> - 支持本地存储登录状态，下次进入时自动校验登录状态',
+                    '<strong>登录状态提示</strong> - 登录过程中展示加载状态，登录成功/失败时提供反馈',
+                    '<strong>异常处理机制</strong> - 处理用户拒绝授权、网络异常等情况，提供重试选项'
+                ],
+                'principles': [
+                    '<strong>授权登录流程</strong> - 点击登录按钮→调用wx.login获取code→后端换取openid/session_key→获取用户信息→完成登录',
+                    '<strong>登录状态管理</strong> - 登录成功后在本地存储token和过期时间，后续请求携带token进行身份验证',
+                    '<strong>权限处理</strong> - 首次登录需征得用户同意获取头像和昵称等信息，必须勾选同意用户协议才能登录',
+                    '<strong>登录失败处理</strong> - 区分不同失败原因（网络问题、用户拒绝、服务器错误）提供针对性引导和解决方案',
+                    '<strong>自动登录逻辑</strong> - 检查本地token是否存在且未过期，若有效则自动跳转至首页，无效则展示登录界面',
+                    '<strong>登录后跳转</strong> - 根据进入登录页的来源不同，登录成功后跳回对应页面，默认跳转至首页'
+                ],
+                'interactions': [
+                    '<strong>页面进入流程</strong> - 小程序启动时检查登录状态→若token无效或不存在则自动进入登录页→检查是否支持微信登录',
+                    '<strong>协议同意交互</strong> - 用户首次登录时需手动勾选同意用户协议→未勾选时点击登录按钮提示必须同意→勾选后允许登录',
+                    '<strong>授权过程交互</strong> - 点击登录按钮→显示微信授权弹窗→用户确认授权→显示登录中状态→验证完成→跳转目标页面',
+                    '<strong>异常处理交互</strong> - 授权失败→分析原因→提供视觉反馈和对应解决方案→用户操作→重试登录流程',
+                    '<strong>返回机制</strong> - 提供返回按钮，允许用户放弃登录并返回之前浏览的页面（若有）或关闭小程序',
+                    '<strong>登录态刷新</strong> - 后台定期检查token有效期，即将过期时静默刷新，避免用户频繁登录'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 微信授权登录、用户协议确认、登录状态保持，这些是用户进入应用的基础',
+                    '<strong>重要功能(P1)</strong> - 登录状态提示、自动登录机制，这些影响用户登录体验流畅度',
+                    '<strong>次要功能(P2)</strong> - 异常处理提示优化、登录历史记录等辅助功能',
+                    '<strong>功能依赖关系</strong> - 微信授权登录依赖微信开放接口；用户信息获取依赖用户授权同意；自动登录依赖本地存储和token有效性',
+                    '<strong>降级策略</strong> - 当微信授权接口异常时，提供重试选项和联系客服入口；当服务器验证失败时，引导用户清除缓存或重启小程序'
+                ]
+            },
+            '设备页': {
+                'title': '页面功能结构',
+                'description': '设备页是用户管理和连接AI硬件设备的核心界面，提供设备发现、连接管理和状态监控功能，是实现内容从小程序到硬件设备传输的关键环节。',
+                'requirements': [
+                    '<strong>设备列表区域</strong> - 展示已配对的设备，包含设备名称、类型、状态（在线/离线）信息，点击可进入设备详情页',
+                    '<strong>添加设备入口</strong> - 位于列表顶部，点击后进入设备搜索和配对流程页面',
+                    '<strong>设备状态指示</strong> - 通过明确的视觉标识区分设备在线和离线状态，离线设备显示上次连接时间',
+                    '<strong>设备分类筛选</strong> - 支持按设备类型或状态筛选设备列表',
+                    '<strong>设备列表刷新</strong> - 提供列表刷新功能，更新设备连接状态',
+                    '<strong>空状态处理</strong> - 无已配对设备时显示引导添加设备的空状态页面'
+                ],
+                'principles': [
+                    '<strong>设备发现机制</strong> - 点击添加设备后，通过蓝牙BLE扫描发现周围可用设备，显示设备名称和信号强度',
+                    '<strong>设备配对流程</strong> - 选择设备→确认配对码→建立连接→设备重命名→完成配对，整个流程需有明确状态反馈',
+                    '<strong>设备状态同步</strong> - 周期性（30秒）检查已配对设备的在线状态，自动更新列表中的设备状态指示',
+                    '<strong>设备管理权限</strong> - 检查用户蓝牙权限，若未授权则引导用户开启；同一设备仅允许绑定到一个用户账号',
+                    '<strong>多设备支持</strong> - 支持同时管理多台不同类型的设备，最多支持10台设备同时管理',
+                    '<strong>异常处理</strong> - 处理设备断连、无响应等异常情况，提供重连和问题排查指引',
+                    '<strong>设备数据缓存</strong> - 本地缓存已配对设备信息，减少每次加载时的网络请求'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 进入页面→检查蓝牙权限→加载已配对设备列表→检查并更新设备在线状态→渲染设备列表',
+                    '<strong>添加设备交互</strong> - 点击添加设备→跳转至设备配对页→搜索周围设备→选择设备→完成配对→返回并刷新设备列表',
+                    '<strong>状态刷新机制</strong> - 支持下拉刷新手动更新设备状态；页面显示时自动刷新一次；后台定时轮询更新（30秒间隔）',
+                    '<strong>设备详情访问</strong> - 点击列表中的设备项→跳转至对应设备详情页→读取设备详细信息和存储状态',
+                    '<strong>权限引导流程</strong> - 检测蓝牙权限→若未授权，显示权限请求提示→引导用户前往设置开启→返回后重新检测',
+                    '<strong>离线设备处理</strong> - 离线设备显示灰色状态和上次在线时间→点击仍可查看基本信息→提供重连选项和故障排查建议'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 设备列表展示、添加设备入口、设备状态指示，这些是设备管理的基础',
+                    '<strong>重要功能(P1)</strong> - 设备状态同步、设备详情访问、空状态处理，这些影响用户使用体验',
+                    '<strong>次要功能(P2)</strong> - 设备分类筛选、历史连接记录等辅助功能',
+                    '<strong>功能依赖关系</strong> - 设备发现和连接功能依赖于手机蓝牙模块和权限；设备状态同步依赖于后端API和本地缓存',
+                    '<strong>降级策略</strong> - 蓝牙不可用时提供故障排查指南；网络不可用时仍展示本地缓存的设备列表并标记同步状态'
+                ]
+            },
+            '社区页': {
+                'title': '页面功能结构',
+                'description': '社区页是用户浏览、发现和互动其他用户创作内容的平台，通过瀑布流形式展示作品，并提供多种筛选和互动功能，促进用户之间的内容分享和创作灵感交流。',
+                'requirements': [
+                    '<strong>顶部分类标签栏</strong> - 提供"推荐"、"最新"、"热门"三个主要分类，支持横向滑动切换',
+                    '<strong>作品瀑布流</strong> - 双列瀑布流布局展示作品缩略图，支持不规则高度自适应排列',
+                    '<strong>作品卡片</strong> - 显示作品缩略图、标题、作者信息、互动数据（如点赞数），点击进入作品详情页',
+                    '<strong>筛选控件</strong> - 提供按创作类型（视频/图片）、风格类别等维度的筛选功能',
+                    '<strong>内容刷新</strong> - 支持下拉刷新获取最新内容，上拉加载更多实现分页加载',
+                    '<strong>搜索入口</strong> - 页面顶部提供搜索入口，支持按关键词、标签搜索社区内容'
+                ],
+                'principles': [
+                    '<strong>内容加载机制</strong> - 采用懒加载方式，初始加载10条内容，滑动到底部触发加载下一页，每页10条',
+                    '<strong>分类切换逻辑</strong> - 切换分类标签时重新请求对应分类的数据，保留各分类浏览位置，避免重复加载',
+                    '<strong>作品互动处理</strong> - 支持在列表页直接对作品进行点赞操作，操作结果实时反馈并同步到服务端',
+                    '<strong>数据缓存策略</strong> - 本地缓存已加载的作品数据，减少重复请求，缓存有效期为5分钟',
+                    '<strong>个性化推荐</strong> - "推荐"分类根据用户历史浏览和互动记录提供个性化内容推荐',
+                    '<strong>内容审核标记</strong> - 对违规或敏感内容进行标记处理，限制显示范围',
+                    '<strong>网络异常处理</strong> - 网络请求失败时展示重试选项，已加载内容保持可查看状态'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 进入页面→加载默认分类（推荐）数据→渲染瀑布流→初始化筛选条件→注册滚动和点击事件',
+                    '<strong>分类切换交互</strong> - 点击或滑动切换分类标签→显示加载状态→请求对应分类数据→更新瀑布流内容→记录当前分类',
+                    '<strong>内容浏览交互</strong> - 上下滑动浏览内容→接近底部自动加载更多→加载过程中显示加载指示器→新内容无缝衔接',
+                    '<strong>作品点击交互</strong> - 点击作品卡片→记录浏览位置→跳转至作品详情页→查看详情→返回时恢复浏览位置',
+                    '<strong>筛选应用流程</strong> - 点击筛选按钮→显示筛选选项面板→选择条件→应用筛选→重新加载符合条件的内容',
+                    '<strong>搜索交互流程</strong> - 点击搜索图标→跳转至搜索页→输入关键词→执行搜索→展示结果→点击回到社区页'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 瀑布流作品展示、分类标签切换、作品详情查看，这些是社区内容发现的基础',
+                    '<strong>重要功能(P1)</strong> - 内容刷新和加载更多、作品互动、筛选功能，这些提升内容浏览体验',
+                    '<strong>次要功能(P2)</strong> - 搜索功能、个性化推荐优化等辅助功能',
+                    '<strong>功能依赖关系</strong> - 瀑布流展示依赖社区内容API；个性化推荐依赖用户行为数据和推荐算法；互动功能依赖用户登录状态',
+                    '<strong>降级策略</strong> - 网络不稳定时优先加载图片缩略图；推荐算法不可用时回退到热门排序；缓存策略保证断网时仍可浏览已加载内容'
+                ]
+            },
+            '个人中心': {
+                'title': '页面功能结构',
+                'description': '个人中心是用户管理个人信息、创作内容和设备的集中控制面板，提供用户资料展示、创作管理、设备管理和应用设置等核心功能，是用户个性化体验的重要组成部分。',
+                'requirements': [
+                    '<strong>用户信息区域</strong> - 展示用户头像、昵称、ID及资料编辑入口，点击头像或编辑按钮进入资料编辑页',
+                    '<strong>数据统计栏</strong> - 显示用户创作数量、已连接设备数量和获赞数量等核心数据指标',
+                    '<strong>创作管理模块</strong> - 包含"我的创作"和"我的收藏"两个主要入口，点击进入对应的内容管理页面',
+                    '<strong>设备管理模块</strong> - 提供设备管理和内容传输记录查看入口，与设备页形成功能联动',
+                    '<strong>辅助功能区</strong> - 包含帮助中心、意见反馈和关于我们等辅助功能入口',
+                    '<strong>设置入口</strong> - 页面右上角提供设置图标，点击进入应用设置页面'
+                ],
+                'principles': [
+                    '<strong>用户信息管理</strong> - 支持查看和编辑用户头像、昵称、个人简介等基本信息，资料变更需同步至服务端',
+                    '<strong>创作内容管理</strong> - "我的创作"展示用户所有创作的作品列表，支持按创建时间、发布状态筛选，提供编辑、删除、传输等操作',
+                    '<strong>收藏内容管理</strong> - "我的收藏"展示用户收藏的所有作品，支持取消收藏、添加到我的创作等操作',
+                    '<strong>数据统计逻辑</strong> - 用户创作数据实时从服务端获取，展示准确的创作数量、设备数和获赞数',
+                    '<strong>会话状态管理</strong> - 检测登录状态，未登录状态下显示登录提示；支持退出登录功能，清除本地登录凭证',
+                    '<strong>缓存管理</strong> - 提供清除本地缓存选项，重置应用数据，但保留登录状态',
+                    '<strong>用户反馈通道</strong> - 意见反馈入口支持用户提交问题和建议，包含文字描述和截图上传功能'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 进入页面→检查登录状态→请求用户信息和统计数据→加载内容预览→渲染页面',
+                    '<strong>资料编辑交互</strong> - 点击头像或编辑按钮→跳转至资料编辑页→修改信息→保存→返回并刷新个人中心显示',
+                    '<strong>内容管理交互</strong> - 点击"我的创作"或"我的收藏"→进入对应列表页→浏览/管理内容→操作后返回→刷新统计数据',
+                    '<strong>设备管理跳转</strong> - 点击设备管理入口→跳转至设备页→默认选中"我的设备"标签→查看/管理设备列表',
+                    '<strong>退出登录流程</strong> - 点击设置→选择退出登录→确认对话框→确认后清除登录信息→跳转至登录页',
+                    '<strong>清除缓存交互</strong> - 点击设置→选择清除缓存→确认对话框→执行缓存清理→显示成功提示→刷新页面'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 用户信息展示、创作和收藏管理、设备管理入口，这些是个人中心的核心价值',
+                    '<strong>重要功能(P1)</strong> - 数据统计、设置功能、用户反馈，这些提升用户体验和应用运营',
+                    '<strong>次要功能(P2)</strong> - 关于我们、版本信息等辅助功能',
+                    '<strong>功能依赖关系</strong> - 用户信息展示依赖登录状态和用户API；创作管理依赖内容存储服务；设备管理依赖设备绑定记录',
+                    '<strong>降级策略</strong> - 网络不可用时展示缓存的用户信息和创作数据；服务端异常时提供重试选项；保证基本导航功能始终可用'
+                ]
+            },
+            '图片上传': {
+                'title': '页面功能结构',
+                'description': '图片上传页是AI创作流程的起始环节，用户在此上传素材图片并选择期望的AI处理效果，为后续的智能创作提供输入素材和处理参数。',
+                'requirements': [
+                    '<strong>图片上传区域</strong> - 居中展示的上传框，支持点击选择图片和拖拽上传两种方式',
+                    '<strong>效果选择区域</strong> - 横向布局的效果选项列表，包括动态视频、动漫风格、水彩效果、赛博朋克等多种可选效果',
+                    '<strong>文件格式提示</strong> - 上传区域下方显示支持的文件格式和尺寸要求说明',
+                    '<strong>操作按钮</strong> - 页面底部的"下一步"按钮，上传图片并选择效果后激活',
+                    '<strong>返回按钮</strong> - 页面顶部提供关闭或返回按钮，用于取消创作流程',
+                    '<strong>底部导航栏</strong> - 保持底部导航栏可见，便于用户随时切换其他功能区域'
+                ],
+                'principles': [
+                    '<strong>图片选择逻辑</strong> - 调用wx.chooseImage API选择图片，支持从相册和相机获取，限制单次上传1张图片',
+                    '<strong>图片上传限制</strong> - 检查图片格式（支持JPG、PNG），文件大小（≤10MB），分辨率（建议≥1080×1080）',
+                    '<strong>效果选择机制</strong> - 点击效果选项高亮显示并记录所选效果类型ID，默认选中"动态视频"效果',
+                    '<strong>参数传递</strong> - 点击下一步时，将图片临时文件路径和选中的效果类型ID传递到处理中页面',
+                    '<strong>路径记录</strong> - 记录用户进入图片上传页的来源（首页/我的创作等），用于处理完成后的返回路径判断',
+                    '<strong>过程反馈</strong> - 图片选择和效果切换时提供即时的视觉反馈，增强用户操作感知',
+                    '<strong>大图预览</strong> - 支持点击已选图片预览大图，确认图片内容和质量'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 进入页面→检查设备权限→初始化上传区域→根据入口参数预选效果→设置返回路径',
+                    '<strong>图片选择交互</strong> - 点击上传区域→调用wx.chooseImage→用户选择图片→返回临时文件路径→显示预览图→启用下一步按钮',
+                    '<strong>效果切换交互</strong> - 点击效果选项→取消之前选中状态→新选项高亮显示→记录效果ID→更新预览图效果提示',
+                    '<strong>图片预览交互</strong> - 点击已上传图片→放大预览→支持缩放查看细节→关闭预览返回上传界面',
+                    '<strong>下一步流程</strong> - 检查图片和效果选择状态→点击下一步→校验图片有效性→构建处理参数→跳转至处理中页面',
+                    '<strong>返回处理</strong> - 点击返回按钮→检查是否已上传图片→若已上传则提示确认放弃→确认后返回来源页面'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 图片选择上传、效果类型选择、下一步流程，这些构成创作的必要路径',
+                    '<strong>重要功能(P1)</strong> - 图片预览、格式限制提示、返回确认，这些提升用户体验和创作效率',
+                    '<strong>次要功能(P2)</strong> - 效果说明、历史创作参考等辅助功能',
+                    '<strong>功能依赖关系</strong> - 图片上传依赖微信相册/相机权限；效果预览依赖图片已选状态；下一步功能依赖图片和效果都已选择',
+                    '<strong>降级策略</strong> - 权限受限时提供权限引导；网络不佳时优化图片本地压缩；暂存创作参数，意外退出可恢复'
+                ]
+            },
+            'AI处理中': {
+                'title': '页面功能结构',
+                'description': 'AI处理中页面展示创作素材的处理进度，为用户提供明确的等待反馈，减轻等待焦虑，并在处理完成后自动跳转到结果页面或处理失败页面。',
+                'requirements': [
+                    '<strong>进度显示区域</strong> - 中央区域显示当前处理进度，包含进度条和百分比数值',
+                    '<strong>处理状态提示</strong> - 进度区域上方显示当前处理阶段，如"正在分析图像"、"正在生成效果"等',
+                    '<strong>原始图片预览</strong> - 显示用户上传的原始图片缩略图，便于用户确认处理的是正确内容',
+                    '<strong>预计剩余时间</strong> - 进度条下方显示预计剩余处理时间，动态更新',
+                    '<strong>取消按钮</strong> - 提供取消处理的选项，终止当前创作任务',
+                    '<strong>处理中动画</strong> - 提供视觉动效，减轻用户等待焦虑'
+                ],
+                'principles': [
+                    '<strong>处理流程管理</strong> - 通过轮询或WebSocket方式获取后端处理进度，处理请求包含图片ID和效果类型参数',
+                    '<strong>进度计算逻辑</strong> - 根据后端返回的阶段和进度信息，计算并展示0-100%的整体进度百分比',
+                    '<strong>超时处理</strong> - 设置处理超时机制（3分钟），超时后提示用户是否继续等待或取消处理',
+                    '<strong>中断处理</strong> - 用户点击取消按钮时，确认用户意图后向后端发送取消请求，终止处理任务',
+                    '<strong>状态转换</strong> - 处理成功后自动跳转至creation-result.html，处理失败则跳转至creation-failed.html',
+                    '<strong>后台处理</strong> - 支持处理过程中切换至其他页面，后台继续处理，并通过消息通知用户处理完成',
+                    '<strong>网络异常处理</strong> - 检测网络状态，网络中断时暂停进度更新并提示用户，网络恢复后自动继续'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收参数（图片和效果类型）→显示原图预览→启动后端处理请求→初始化进度条和状态提示',
+                    '<strong>进度更新交互</strong> - 建立轮询连接→定时请求进度状态（每2秒）→接收服务器返回进度→更新UI显示→计算剩余时间',
+                    '<strong>处理阶段变化</strong> - 检测到处理阶段变化→更新状态文本→播放阶段转换动效→调整进度条颜色→更新预计时间',
+                    '<strong>取消处理流程</strong> - 点击取消按钮→显示确认对话框→用户确认取消→发送取消请求→结束轮询→返回上传页面',
+                    '<strong>处理完成处理</strong> - 接收完成状态→显示100%进度→短暂延迟（显示完成动效）→根据结果跳转到对应页面',
+                    '<strong>异常状态交互</strong> - 检测连接异常→暂停轮询→显示错误提示→提供重试选项→用户选择继续/放弃'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 进度显示、状态更新、处理完成跳转，这些是用户了解处理状态的关键要素',
+                    '<strong>重要功能(P1)</strong> - 预计时间显示、动画效果、取消处理，这些增强等待体验和提供控制选项',
+                    '<strong>次要功能(P2)</strong> - 原图预览、处理细节说明等辅助功能',
+                    '<strong>功能依赖关系</strong> - 进度显示依赖后端处理状态API；预计时间依赖历史处理数据和当前速度；完成跳转依赖处理结果状态',
+                    '<strong>降级策略</strong> - 网络波动时降低轮询频率；无法获取精确进度时显示模糊进度（"约40%完成"）；长时间无响应时提供跳过选项'
+                ]
+            },
+            '创作结果': {
+                'title': '页面功能结构',
+                'description': '创作结果页展示AI处理完成后的成品，提供预览、保存、分享和设备传输等核心功能，是用户完成创作并决定后续操作的关键环节。',
+                'requirements': [
+                    '<strong>结果预览区域</strong> - 页面主体区域展示处理完成的成品，动态视频效果支持自动播放',
+                    '<strong>主操作按钮组</strong> - 提供"发送到设备"、"编辑发布"两个主要功能按钮，突出显示以引导用户完成后续操作',
+                    '<strong>次要操作区</strong> - 底部图标区提供"保存到相册"、"重新制作"等辅助功能',
+                    '<strong>创作信息展示</strong> - 显示创作类型、处理时间等基本信息',
+                    '<strong>返回按钮</strong> - 页面顶部提供返回按钮，可返回至创作来源页面',
+                    '<strong>相似推荐区</strong> - 页面底部可选展示类似风格的推荐作品，引导用户继续创作'
+                ],
+                'principles': [
+                    '<strong>设备传输流程</strong> - 点击"发送到设备"按钮→检查设备连接状态→选择目标设备→启动传输流程→跳转至传输进度页面',
+                    '<strong>内容编辑发布</strong> - 点击"编辑发布"按钮→跳转至artwork-edit.html→用户补充作品信息→发布至社区',
+                    '<strong>本地保存机制</strong> - 点击"保存到相册"调用wx.saveImageToPhotosAlbum或wx.saveVideoToPhotosAlbum API，根据内容类型自动选择',
+                    '<strong>重新制作功能</strong> - 保留当前图片和效果设置，跳转回创作页重新处理，提供迭代优化路径',
+                    '<strong>媒体加载优化</strong> - 大图/视频使用渐进式加载，先显示缩略图或占位图，再加载高清内容，优化用户体验',
+                    '<strong>返回逻辑处理</strong> - 根据用户进入创作流程的来源页面（首页/我的创作等）决定返回的目标页面',
+                    '<strong>结果缓存策略</strong> - 本地临时缓存创作结果，允许用户在一定时间内（30分钟）无需重新处理即可执行各种操作'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收处理结果数据→检查内容类型→加载预览内容→初始化操作按钮→加载推荐内容',
+                    '<strong>结果预览交互</strong> - 视频内容自动播放→提供暂停/播放控制→支持单击放大查看→支持手势缩放和平移→双击退出全屏',
+                    '<strong>发送到设备流程</strong> - 点击发送按钮→检查是否有配对设备→无设备时引导配对→有设备时显示设备列表→选择目标设备→跳转传输页面',
+                    '<strong>编辑发布交互</strong> - 点击编辑发布→跳转作品编辑页→自动填充创作类型和预览图→用户添加标题/描述/标签→发布或保存草稿',
+                    '<strong>本地保存流程</strong> - 点击保存到相册→检查相册权限→请求授权（若需要）→执行保存操作→显示结果反馈→提供查看选项',
+                    '<strong>重新制作交互</strong> - 点击重新制作→确认对话框→保留原素材和参数→返回创作页→允许用户调整参数→开始新处理'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 结果预览展示、发送到设备、保存到相册，这些是创作成果使用的关键路径',
+                    '<strong>重要功能(P1)</strong> - 编辑发布、重新制作、返回功能，这些提供内容再利用和流程控制',
+                    '<strong>次要功能(P2)</strong> - 相似推荐、创作信息展示等辅助功能',
+                    '<strong>功能依赖关系</strong> - 预览功能依赖内容类型识别和媒体加载；发送至设备依赖设备连接状态；保存到相册依赖相册权限',
+                    '<strong>降级策略</strong> - 视频无法播放时提供静态预览；设备未连接时保存发送任务待后续执行；网络不佳时优先保证本地功能可用'
+                ]
+            },
+            '处理失败': {
+                'title': '页面功能结构',
+                'description': '处理失败页面展示AI处理过程中出现的错误，提供明确的故障原因说明和解决方案，帮助用户理解问题并选择合适的后续操作。',
+                'requirements': [
+                    '<strong>错误状态图示</strong> - 页面顶部通过图形化方式直观展示处理失败状态',
+                    '<strong>原因说明区域</strong> - 清晰说明处理失败的具体原因，如网络问题、图片不符合要求、服务器错误等',
+                    '<strong>解决方案提示</strong> - 根据失败原因提供针对性的解决建议',
+                    '<strong>操作按钮区</strong> - 提供"重新尝试"和"返回上传"两个主要操作选项',
+                    '<strong>故障代码显示</strong> - 显示错误代码，便于技术支持分析问题',
+                    '<strong>帮助入口</strong> - 提供"联系客服"或"查看帮助"等辅助选项'
+                ],
+                'principles': [
+                    '<strong>错误分类处理</strong> - 根据错误类型（网络错误、图片问题、服务器错误、权限问题等）提供不同的提示内容和解决方案',
+                    '<strong>重试机制</strong> - 点击"重新尝试"按钮使用相同参数重新提交处理请求，无需用户重新上传图片',
+                    '<strong>返回上传逻辑</strong> - 点击"返回上传"按钮跳转回创作页面，保留用户之前的图片但允许重新选择',
+                    '<strong>错误日志记录</strong> - 记录处理失败的详细信息（包括错误代码、处理参数、时间戳等），便于后续分析和优化',
+                    '<strong>用户引导策略</strong> - 根据失败频率和类型，判断是否需要引导用户查看帮助中心或联系客服',
+                    '<strong>反馈提交入口</strong> - 提供便捷的问题反馈渠道，用户可直接从失败页面提交具体问题',
+                    '<strong>恢复状态处理</strong> - 当用户返回应用时，检查是否有未处理的失败状态，提供继续处理的选项'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 接收错误信息和处理参数→分析错误类型→选择合适的错误提示模板→展示错误状态和解决方案',
+                    '<strong>重试操作流程</strong> - 点击重试按钮→保持原参数不变→显示确认提示→用户确认→直接启动新处理流程→跳转至处理中页面',
+                    '<strong>返回上传交互</strong> - 点击返回上传→保留原始图片和效果选择→跳转回上传页面→允许用户调整参数→重新开始',
+                    '<strong>查看帮助交互</strong> - 点击查看帮助→根据错误类型跳转至相关帮助文档→用户阅读解决方案→通过帮助页返回功能回到原页面',
+                    '<strong>反馈提交流程</strong> - 点击反馈按钮→打开反馈表单→自动填充错误信息→用户补充问题描述→提交→显示感谢提示',
+                    '<strong>数据保存机制</strong> - 错误发生时保存处理参数和素材→用户下次进入应用时检测→提示恢复上次失败的创作'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 错误原因展示、重试功能、返回上传选项，这些是错误恢复的关键路径',
+                    '<strong>重要功能(P1)</strong> - 解决方案建议、故障代码显示、错误日志记录，这些帮助解决问题和提升体验',
+                    '<strong>次要功能(P2)</strong> - 联系客服入口、帮助文档入口等辅助功能',
+                    '<strong>功能依赖关系</strong> - 错误提示依赖后端返回的错误码和描述；重试功能依赖原始处理参数的保存；解决方案建议依赖错误类型判断',
+                    '<strong>降级策略</strong> - 无法获取详细错误信息时显示通用错误提示；无法自动重试时提供手动步骤指引；确保至少一种返回路径可用'
+                ]
+            },
+            '设备配对': {
+                'title': '页面功能结构',
+                'description': '设备配对页面引导用户搜索、选择并配对AI硬件设备，通过蓝牙连接建立小程序与硬件设备的通信，是实现内容传输和硬件控制的基础环节。',
+                'requirements': [
+                    '<strong>设备搜索区域</strong> - 展示附近可用的原物永伴设备，显示设备名称和信号强度',
+                    '<strong>搜索状态指示</strong> - 清晰展示当前的搜索状态（搜索中、已完成），支持手动刷新',
+                    '<strong>设备列表项</strong> - 每个设备项包含设备名称、类型图标、信号强度和连接按钮',
+                    '<strong>配对码验证</strong> - 选择设备后显示配对码输入界面，确保安全连接',
+                    '<strong>连接状态进度</strong> - 配对过程中展示进度指示器，反映当前配对阶段',
+                    '<strong>问题排查区域</strong> - 页面底部提供常见问题解决指引和帮助入口'
+                ],
+                'principles': [
+                    '<strong>设备发现流程</strong> - 进入页面→请求蓝牙权限→初始化蓝牙模块→开始设备扫描→过滤并展示兼容设备→用户选择目标设备',
+                    '<strong>配对安全机制</strong> - 选择设备后要求用户输入显示在设备屏幕上的配对码，验证一致后才允许建立安全连接',
+                    '<strong>设备连接管理</strong> - 处理连接请求、连接超时、连接失败等情况，提供明确的状态反馈和错误处理',
+                    '<strong>设备初始化</strong> - 连接成功后进行设备信息读取和基本设置（如读取设备名称、固件版本、存储状态等）',
+                    '<strong>设备命名处理</strong> - 首次配对成功后提示用户为设备命名，默认使用"原物永伴设备+序号"格式',
+                    '<strong>多设备管理</strong> - 支持同时管理多台设备，同一设备不允许被多个用户同时配对',
+                    '<strong>异常状态处理</strong> - 处理设备不可见、配对失败、意外断连等异常情况，提供故障排除建议'
+                ],
+                'interactions': [
+                    '<strong>权限请求流程</strong> - 页面加载→检查蓝牙权限→若未授权则显示权限请求弹窗→用户授权后启动扫描→拒绝则提示无法使用',
+                    '<strong>设备扫描交互</strong> - 初始化蓝牙模块→显示扫描动画→实时更新发现的设备列表→按信号强度排序→支持下拉刷新重新扫描',
+                    '<strong>设备选择流程</strong> - 点击设备项→显示连接中状态→尝试建立连接→连接成功后进入配对码验证→连接失败则提示重试',
+                    '<strong>配对码验证交互</strong> - 显示配对码输入界面→提示查看设备屏幕→用户输入配对码→验证匹配→匹配成功进入下一步→失败提示重试',
+                    '<strong>设备命名流程</strong> - 配对成功后→显示设备命名界面→提供默认名称→用户可修改→确认后保存→完成配对流程',
+                    '<strong>配对完成处理</strong> - 显示配对成功提示→将设备信息保存到本地和云端→更新设备列表→返回设备页或开始传输'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 蓝牙权限获取、设备扫描发现、连接建立和配对，这些是设备配对的基础路径',
+                    '<strong>重要功能(P1)</strong> - 配对码验证、设备命名、状态反馈，这些确保安全连接和用户感知',
+                    '<strong>次要功能(P2)</strong> - 设备信息读取、问题排查指引等辅助功能',
+                    '<strong>功能依赖关系</strong> - 设备扫描依赖蓝牙权限；配对验证依赖设备和手机双向通信；设备初始化依赖成功建立的连接',
+                    '<strong>降级策略</strong> - 蓝牙不稳定时降低扫描频率；设备多时分页显示；无法自动识别设备类型时提供手动选择'
+                ]
+            },
+            '设备详情': {
+                'title': '页面功能结构',
+                'description': '设备详情页面展示单个AI硬件设备的详细信息和状态，提供设备管理、内容传输和参数设置等功能，是用户操控特定设备的管理中心。',
+                'requirements': [
+                    '<strong>设备基本信息区</strong> - 顶部展示设备名称、类型、连接状态和设备缩略图',
+                    '<strong>存储状态区域</strong> - 显示设备存储空间使用情况，包括总容量、已用空间和可用空间',
+                    '<strong>已传输内容列表</strong> - 展示当前设备上已有的内容，包括缩略图、名称和传输时间',
+                    '<strong>设备管理功能区</strong> - 包含设备重命名、固件更新、断开连接等管理功能',
+                    '<strong>内容传输按钮</strong> - 提供"发送新内容"按钮，触发内容选择和传输流程',
+                    '<strong>设备参数设置区</strong> - 提供亮度调节、定时开关机等设备参数设置选项'
+                ],
+                'principles': [
+                    '<strong>设备状态同步</strong> - 页面加载时检查设备连接状态，定期（30秒）更新设备在线状态和存储信息',
+                    '<strong>内容管理机制</strong> - 支持查看、预览和删除设备上的内容，可对内容进行排序和优先级设置',
+                    '<strong>设备重命名流程</strong> - 点击重命名按钮→显示重命名输入框→验证名称合法性→提交修改→更新本地和设备上的名称',
+                    '<strong>断开连接处理</strong> - 断开前确认用户意图，断开后返回设备列表页，并在适当时机提供重新连接选项',
+                    '<strong>固件更新检查</strong> - 自动检查设备固件版本，有新版本时提示用户，支持OTA在线更新',
+                    '<strong>内容传输入口</strong> - 点击"发送新内容"→跳转至用户作品选择页面→用户选择内容→开始传输流程',
+                    '<strong>离线状态处理</strong> - 设备离线时，禁用需要连接的功能，提供重连指引，保留基本信息查看能力'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收设备ID→尝试连接设备→读取基本信息（名称/型号/状态）→请求存储信息→加载设备内容列表',
+                    '<strong>设备状态交互</strong> - 建立30秒定时轮询→检测设备在线状态→更新连接指示器→同步存储使用情况→检查固件版本',
+                    '<strong>内容浏览交互</strong> - 滚动浏览设备内容→点击内容项显示详情→支持预览/删除/设为当前显示内容等操作→操作结果实时反馈',
+                    '<strong>设备重命名流程</strong> - 点击重命名→弹出输入框→输入新名称→验证有效性（长度/特殊字符）→确认后发送更新请求→显示成功提示',
+                    '<strong>固件更新交互</strong> - 发现新版本→显示更新提示→用户确认更新→显示更新进度→完成后提示重启设备→设备重启后自动重连',
+                    '<strong>发送新内容流程</strong> - 点击发送按钮→进入我的创作列表→用户选择内容→确认发送→跳转至传输进度页面→传输完成后返回'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 设备状态显示、内容列表管理、发送新内容功能，这些是设备使用的核心功能',
+                    '<strong>重要功能(P1)</strong> - 设备重命名、固件更新、存储状态管理，这些提供设备维护能力',
+                    '<strong>次要功能(P2)</strong> - 设备参数调整、统计信息显示等辅助功能',
+                    '<strong>功能依赖关系</strong> - 设备状态显示依赖蓝牙连接状态；内容管理功能依赖设备在线状态；固件更新依赖网络和设备电量状态',
+                    '<strong>降级策略</strong> - 设备离线时仍显示基本信息和缓存的内容列表；电量低时禁用固件更新；连接不稳定时提供简化操作模式'
+                ]
+            },
+            '内容传输': {
+                'title': '页面功能结构',
+                'description': '内容传输页面展示用户创作内容从小程序向AI硬件设备传输的过程和状态，提供清晰的进度反馈和操作选项，确保用户了解传输情况并能够控制传输过程。',
+                'requirements': [
+                    '<strong>传输进度指示</strong> - 中央区域显示当前传输进度，包含进度条、百分比数值和已传输/总大小信息',
+                    '<strong>设备连接状态</strong> - 显示目标设备名称和当前连接状态，确保用户了解传输对象',
+                    '<strong>传输内容预览</strong> - 展示正在传输的内容缩略图和基本信息，便于用户确认',
+                    '<strong>预计剩余时间</strong> - 根据当前传输速度计算并显示预计完成时间',
+                    '<strong>取消传输按钮</strong> - 提供取消当前传输的选项，中断传输过程',
+                    '<strong>传输完成选项</strong> - 传输完成后提供"返回设备详情"和"继续传输"两个操作选项'
+                ],
+                'principles': [
+                    '<strong>传输协议管理</strong> - 使用BLE数据传输协议，对大型内容进行分块传输，确保数据完整性和传输效率',
+                    '<strong>传输速度优化</strong> - 根据连接质量动态调整传输速度和分块大小，平衡速度和稳定性',
+                    '<strong>传输进度计算</strong> - 基于已传输字节数与总字节数的比例计算显示进度，实时更新UI展示',
+                    '<strong>中断恢复机制</strong> - 支持因意外断连导致的传输中断后的断点续传，减少用户等待时间',
+                    '<strong>错误处理策略</strong> - 检测并处理传输过程中的错误（如连接丢失、设备存储已满等），提供明确的错误提示和解决方案',
+                    '<strong>批量传输管理</strong> - 支持多内容排队传输，显示队列状态和总体进度，允许调整传输优先级',
+                    '<strong>传输完成验证</strong> - 传输结束后校验数据完整性，确认设备成功接收并处理内容，反馈最终结果'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收传输参数（内容ID、设备ID）→检查设备连接→初始化传输进度→显示内容预览→开始传输',
+                    '<strong>传输进度交互</strong> - 传输开始→实时更新进度条和百分比→每秒更新传输速度→计算并显示剩余时间→显示已传输/总大小',
+                    '<strong>设备状态监控</strong> - 传输过程中持续监控设备连接状态→检测到信号弱时提示→断连时自动暂停→重连后提示继续',
+                    '<strong>取消传输流程</strong> - 点击取消按钮→显示确认对话框→用户确认→向设备发送取消指令→清理临时数据→返回设备详情页',
+                    '<strong>传输完成交互</strong> - 传输达到100%→显示完成动效→设备验证数据完整性→显示成功提示→提供"返回"和"继续传输"选项',
+                    '<strong>错误处理交互</strong> - 检测到错误→暂停传输→分析错误类型→显示针对性错误提示→提供解决方案→用户执行操作→恢复或放弃'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 进度显示、设备连接状态监控、传输基本控制，这些是传输过程的关键要素',
+                    '<strong>重要功能(P1)</strong> - 传输速度优化、错误恢复机制、完成后选项，这些提升传输可靠性和用户体验',
+                    '<strong>次要功能(P2)</strong> - 详细传输日志、高级传输设置等辅助功能',
+                    '<strong>功能依赖关系</strong> - 传输功能依赖蓝牙连接稳定性；进度计算依赖设备反馈数据；断点续传依赖本地缓存和设备端支持',
+                    '<strong>降级策略</strong> - 连接不稳定时降低传输速率；无法获取精确进度时显示模糊进度条；极端情况下提供手动确认机制'
+                ]
+            },
+            '作品详情': {
+                'title': '页面功能结构',
+                'description': '作品详情页面展示单个AI创作作品的完整信息和内容，提供作品浏览、互动和管理功能，帮助用户欣赏、分享和利用创作内容。',
+                'requirements': [
+                    '<strong>作品主体展示</strong> - 页面核心区域展示作品内容，图片作品支持缩放查看，视频作品支持播放控制',
+                    '<strong>作者信息区域</strong> - 显示创作者头像、昵称及关注状态，点击可跳转至作者主页',
+                    '<strong>作品信息面板</strong> - 展示作品标题、创作时间、使用效果类型和作品描述',
+                    '<strong>互动功能区</strong> - 提供点赞、收藏、分享等社交互动功能，显示互动数据统计',
+                    '<strong>操作按钮组</strong> - 包含"发送到设备"、"保存到本地"、"编辑信息"等主要功能按钮',
+                    '<strong>标签列表</strong> - 显示作品关联的标签，支持点击跳转到相关标签的作品列表',
+                    '<strong>相似推荐区</strong> - 页面底部展示风格相似的其他作品，促进内容发现'
+                ],
+                'principles': [
+                    '<strong>内容加载优化</strong> - 采用渐进式加载，先显示缩略图或模糊预览，再加载高清内容，优化大图/视频加载体验',
+                    '<strong>互动状态管理</strong> - 点赞/收藏等操作具有即时视觉反馈，状态变更即时同步到服务器，本地缓存用户操作状态',
+                    '<strong>设备传输流程</strong> - 点击"发送到设备"→检查设备连接状态→选择目标设备→启动传输流程→跳转至传输进度页面',
+                    '<strong>权限控制机制</strong> - 根据作品公开属性和用户身份控制编辑、删除等操作权限，仅作者本人可编辑非公开作品',
+                    '<strong>分享功能实现</strong> - 支持生成作品分享卡片，包含作品预览、标题和分享码，可分享到微信好友/朋友圈',
+                    '<strong>举报处理</strong> - 提供内容举报入口，用户可举报违规内容，提交后进入审核流程',
+                    '<strong>统计数据更新</strong> - 记录作品浏览量，实时更新展示互动数据（点赞数、收藏数、浏览量）'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收作品ID→请求作品详细数据→加载内容预览→加载作品信息→请求互动状态→加载相似推荐',
+                    '<strong>内容浏览交互</strong> - 图片支持点击放大→双指缩放和拖动→双击退出全屏；视频支持播放控制→进度条调整→全屏切换',
+                    '<strong>社交互动流程</strong> - 点击点赞/收藏按钮→检查登录状态→未登录引导登录→已登录立即更新状态→动画反馈→发送请求→服务端更新',
+                    '<strong>发送设备交互</strong> - 点击发送设备→检查设备列表→无设备时引导配对→有设备时选择→确认发送→跳转至传输页面',
+                    '<strong>编辑管理流程</strong> - 检查用户权限→作者可见编辑选项→点击编辑→跳转编辑页→修改后返回→显示更新后的信息',
+                    '<strong>分享操作交互</strong> - 点击分享→生成分享卡片→调用微信分享API→用户选择分享渠道→完成分享→记录分享数据→显示感谢'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 作品内容展示、基本信息显示、互动功能，这些是作品详情的核心价值',
+                    '<strong>重要功能(P1)</strong> - 发送到设备、保存到本地、分享功能，这些提供作品利用途径',
+                    '<strong>次要功能(P2)</strong> - 相似推荐、标签浏览、举报功能等辅助功能',
+                    '<strong>功能依赖关系</strong> - 内容展示依赖CDN资源加载；互动功能依赖用户登录状态；编辑功能依赖用户权限验证',
+                    '<strong>降级策略</strong> - 网络不佳时优先加载低清晰度内容；无法获取互动状态时仍保证内容可见；未登录时简化互动功能'
+                ]
+            },
+            '作品编辑': {
+                'title': '页面功能结构',
+                'description': '作品编辑页面允许用户编辑AI创作作品的信息、管理分享权限、添加标签等，是作品从创作完成到社区分享的中间环节，也是用户管理已有作品的主要界面。',
+                'requirements': [
+                    '<strong>作品预览区</strong> - 页面顶部展示作品内容预览，作为编辑内容的直观参考',
+                    '<strong>标题编辑区</strong> - 允许用户输入/修改作品标题，限制字数并显示剩余可输入字符数',
+                    '<strong>描述编辑区</strong> - 多行文本输入框，用于编辑作品描述，支持表情输入',
+                    '<strong>标签管理区</strong> - 显示已添加标签，支持添加和删除标签，提供热门标签推荐',
+                    '<strong>公开设置</strong> - 提供作品公开权限选择，包括"公开"、"仅自己可见"等可选项',
+                    '<strong>操作按钮组</strong> - 底部提供"保存更改"、"取消"、"删除作品"等操作按钮'
+                ],
+                'principles': [
+                    '<strong>信息保存逻辑</strong> - 点击保存按钮时验证必填信息（如标题）有效性，通过后向服务器提交更新请求',
+                    '<strong>标签添加机制</strong> - 支持手动输入和从推荐中选择添加标签，每个作品最多允许5个标签，单个标签最长10个字符',
+                    '<strong>草稿自动保存</strong> - 编辑过程中自动保存草稿状态，防止意外退出导致编辑内容丢失',
+                    '<strong>删除作品确认</strong> - 点击删除按钮时，显示二次确认提示，确认后执行删除操作并返回作品列表页',
+                    '<strong>编辑权限控制</strong> - 仅作品创建者可进行编辑，他人访问时提示无权限并引导返回',
+                    '<strong>输入合规检查</strong> - 对标题、描述等用户输入内容进行敏感词过滤，提示用户修改不合规内容',
+                    '<strong>表单验证反馈</strong> - 提供即时的表单验证反馈，在输入过程中显示错误提示和格式建议'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→接收作品ID→请求作品详细数据→填充编辑表单→加载标签推荐→设置权限状态→检查编辑权限',
+                    '<strong>标题编辑交互</strong> - 聚焦输入框→实时统计字符数→超出限制时提示并禁止继续输入→失焦时进行敏感词检查→显示检查结果',
+                    '<strong>标签管理流程</strong> - 点击添加标签→显示推荐标签列表和输入框→选择或输入→验证格式和数量→添加至已选标签→支持点击删除已选标签',
+                    '<strong>权限设置交互</strong> - 选择不同公开级别→显示对应说明→切换状态时若有重要影响给予提示→确认后更新状态',
+                    '<strong>保存更改流程</strong> - 点击保存→进行表单完整性验证→显示提交中状态→发送更新请求→显示结果反馈→成功后返回详情页',
+                    '<strong>删除作品交互</strong> - 点击删除按钮→显示确认对话框说明影响→用户确认→显示删除中状态→请求删除→成功后返回列表页'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 基本信息编辑、权限设置、保存与取消功能，这些是编辑的基础操作',
+                    '<strong>重要功能(P1)</strong> - 标签管理、草稿自动保存、表单验证，这些提升编辑质量和用户体验',
+                    '<strong>次要功能(P2)</strong> - 敏感词检查、热门标签推荐等辅助功能',
+                    '<strong>功能依赖关系</strong> - 编辑功能依赖用户登录状态和权限验证；保存功能依赖表单验证；标签添加依赖标签推荐API',
+                    '<strong>降级策略</strong> - 标签推荐不可用时仍可手动输入；自动保存失败时提示手动保存；网络不稳定时保持本地编辑状态'
+                ]
+            },
+            '资料编辑': {
+                'title': '页面功能结构',
+                'description': '资料编辑页面允许用户修改个人信息、头像、昵称和简介等，是用户个性化自己账户信息的主要界面，影响用户在社区和创作分享中的形象展示。',
+                'requirements': [
+                    '<strong>头像编辑区</strong> - 页面顶部展示当前头像，提供修改选项，点击后可从相册选择或拍摄新头像',
+                    '<strong>昵称编辑区</strong> - 输入框允许修改用户昵称，限制30字符，需检查昵称是否符合规则',
+                    '<strong>个人简介区</strong> - 多行文本输入框，用于编辑个人介绍，限制200字符，支持表情输入',
+                    '<strong>隐私设置区</strong> - 提供作品默认公开状态、评论权限等隐私选项设置',
+                    '<strong>保存按钮</strong> - 页面底部突出显示的保存按钮，点击后提交所有修改信息',
+                    '<strong>取消按钮</strong> - 提供取消编辑的选项，放弃所有未保存的更改并返回个人中心'
+                ],
+                'principles': [
+                    '<strong>头像处理流程</strong> - 选择头像图片→预览裁剪→确认→上传至服务器→更新本地头像缓存',
+                    '<strong>信息验证逻辑</strong> - 保存前验证昵称合法性（无敏感词、符合长度限制），提示具体错误并引导修改',
+                    '<strong>编辑状态保持</strong> - 表单填写过程中自动保存临时状态，防止意外退出时丢失编辑内容',
+                    '<strong>修改反馈机制</strong> - 信息提交成功后显示成功提示，并自动返回个人中心页面查看更新效果',
+                    '<strong>头像尺寸优化</strong> - 上传头像前进行本地压缩，设置最大尺寸（如1MB）和最佳分辨率',
+                    '<strong>用户引导提示</strong> - 提供适当的输入框提示信息，如"请输入您的昵称（2-30字符）"，增强表单可用性',
+                    '<strong>变更历史记录</strong> - 后端记录用户资料变更历史，便于管理和审核'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→请求当前用户信息→填充表单字段→显示当前头像→载入隐私设置→展示界面',
+                    '<strong>头像修改交互</strong> - 点击头像编辑→调用wx.chooseImage→用户选择图片→进入裁剪界面→用户调整→确认→预览效果',
+                    '<strong>表单输入交互</strong> - 聚焦输入框→显示输入提示→实时字符计数→超出限制时禁止继续输入→失焦时进行验证→显示验证结果',
+                    '<strong>隐私选项切换</strong> - 点击切换开关→立即更新视觉状态→显示对应的选项说明→记录设置变更→保存时一并提交',
+                    '<strong>保存信息流程</strong> - 点击保存按钮→进行全表单验证→验证失败显示错误→验证通过显示提交中→请求更新信息→展示结果→成功则返回',
+                    '<strong>取消编辑交互</strong> - 点击取消→检查是否有修改→有修改则显示确认对话框→用户确认→返回上一页→无修改直接返回'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 头像修改、昵称编辑、保存功能，这些是用户资料编辑的核心',
+                    '<strong>重要功能(P1)</strong> - 个人简介编辑、隐私设置、表单验证，这些提升用户资料完整性和安全性',
+                    '<strong>次要功能(P2)</strong> - 自动保存、变更历史等辅助功能',
+                    '<strong>功能依赖关系</strong> - 头像上传依赖相册/相机权限；保存功能依赖网络和表单验证；页面初始化依赖用户信息API',
+                    '<strong>降级策略</strong> - 网络不稳定时保存本地草稿；头像上传失败仍可保存其他信息；字段验证失败时明确标记问题项'
+                ]
+            },
+            '帮助中心': {
+                'title': '页面功能结构',
+                'description': '帮助中心页面为用户提供使用指南、常见问题解答和反馈渠道，帮助用户解决使用过程中遇到的问题，提高用户满意度和降低流失率，同时收集有价值的用户反馈。',
+                'requirements': [
+                    '<strong>分类导航区</strong> - 页面顶部提供问题分类标签，如"设备连接"、"创作问题"、"账户设置"等，方便用户快速定位问题类型',
+                    '<strong>搜索框</strong> - 提供关键词搜索功能，支持用户直接搜索相关问题和解答',
+                    '<strong>热门问题区</strong> - 展示最常被用户查看的问题，优先显示以满足大多数用户需求',
+                    '<strong>问题列表区</strong> - 按分类展示常见问题，采用折叠式设计，点击问题展开查看详细解答',
+                    '<strong>反馈提交入口</strong> - 提供"问题未解决？"入口，引导用户提交未覆盖的问题或建议',
+                    '<strong>客服联系方式</strong> - 显示官方客服联系渠道，包括微信公众号、邮箱等联系方式'
+                ],
+                'principles': [
+                    '<strong>问题组织逻辑</strong> - 根据使用频率和重要性对问题进行排序，常见和关键问题优先展示',
+                    '<strong>搜索实现机制</strong> - 支持模糊匹配和关键词搜索，匹配问题标题和内容，按相关度排序结果',
+                    '<strong>内容更新策略</strong> - 根据用户反馈和新功能上线情况定期更新FAQ内容，标记最近更新的条目',
+                    '<strong>反馈处理流程</strong> - 用户提交反馈后自动分类并传递给相关团队，重要问题纳入FAQ更新计划',
+                    '<strong>解答呈现方式</strong> - 解答内容支持富文本和图片，复杂操作提供分步骤说明和配图',
+                    '<strong>用户体验优化</strong> - 提供"此回答是否有帮助"的评价机制，收集解答有效性数据',
+                    '<strong>离线访问支持</strong> - 基础问题解答支持缓存，保证弱网或离线环境下仍可查看部分内容'
+                ],
+                'interactions': [
+                    '<strong>页面初始化流程</strong> - 页面加载→请求FAQ分类和热门问题→渲染分类导航和热门问题→载入缓存内容→注册事件监听',
+                    '<strong>分类切换交互</strong> - 点击分类标签→高亮所选分类→请求该分类问题列表→更新问题列表区域→记住用户选择',
+                    '<strong>搜索交互流程</strong> - 输入关键词→实时提示相关问题→点击搜索或回车→发送搜索请求→显示结果列表→未找到时提供反馈入口',
+                    '<strong>问题展开交互</strong> - 点击问题条目→滑动展开解答内容→同时折叠其他已展开问题→记录浏览历史→统计问题热度',
+                    '<strong>反馈提交流程</strong> - 点击反馈入口→展示反馈表单→用户填写问题描述→选择问题类型→提交→显示感谢信息→返回',
+                    '<strong>解答评价机制</strong> - 展开问题后显示"有帮助/无帮助"按钮→用户点击评价→发送评价数据→显示感谢→提供进一步反馈选项'
+                ],
+                'priorities': [
+                    '<strong>核心功能(P0)</strong> - 问题分类、问题列表展示、问题搜索，这些是帮助中心的基础功能',
+                    '<strong>重要功能(P1)</strong> - 热门问题推荐、反馈提交、解答评价，这些提升帮助效率和收集用户反馈',
+                    '<strong>次要功能(P2)</strong> - 客服联系方式、内容离线访问等辅助功能',
+                    '<strong>功能依赖关系</strong> - 问题列表依赖FAQ内容API；搜索功能依赖搜索API；反馈提交依赖用户登录状态',
+                    '<strong>降级策略</strong> - 网络不可用时显示缓存的热门问题；搜索失败时引导使用分类导航；保证基本问题自助解决路径可用'
+                ]
+            },
+            // 页面名称和标题的映射关系，用于同步菜单选择
+            pageMapping: {
+                'home.html': '首页',
+                'community.html': '社区页',
+                'device.html': '设备页',
+                'profile.html': '个人中心',
+                'login.html': '登录页',
+                'creation.html': '图片上传',
+                'creation-processing.html': 'AI处理中',
+                'creation-failed.html': '处理失败',
+                'creation-result.html': '创作结果',
+                'device-pairing.html': '设备配对',
+                'device-detail.html': '设备详情',
+                'transfer-progress.html': '内容传输',
+                'artwork-detail.html': '作品详情',
+                'artwork-edit.html': '作品编辑',
+                'profile-edit.html': '资料编辑',
+                'help-center.html': '帮助中心'
+            }
+        };
+
+        // 当前页面标题
+        let currentPageTitle = '首页';
+
+        // 获取或创建存储的页面编辑数据
+        function getStoredPageData() {
+            let storedData = localStorage.getItem('pageRequirementsEdited');
+            if (storedData) {
+                return JSON.parse(storedData);
+            }
+            return {};
+        }
+
+        // 保存编辑后的页面数据
+        function savePageData(pageTitle, data) {
+            let storedData = getStoredPageData();
+            storedData[pageTitle] = data;
+            localStorage.setItem('pageRequirementsEdited', JSON.stringify(storedData));
+        }
+
+        // 获取特定页面的内容数据
+        function getPageData(pageTitle) {
+            // 首先尝试从已编辑的数据中获取
+            let storedData = getStoredPageData();
+            if (storedData[pageTitle]) {
+                return storedData[pageTitle];
+            }
+            // 如果没有编辑过，返回默认数据
+            return pageRequirementsData[pageTitle] || {
+                'title': pageTitle + '设计要点',
+                'description': '请按照黑白灰设计原则设计' + pageTitle + '界面。',
+                'requirements': ['请根据黑白灰设计原则设计简洁直观的界面'],
+                'principles': [
+                    '简约为主，仅使用黑白灰配色方案',
+                    '视觉层次清晰，重点突出功能入口',
+                    '交互直观，避免复杂操作路径',
+                    '内容为王，减少不必要的装饰元素'
+                ]
+            };
+        }
+
+        // 根据iframe中的页面URL同步左侧菜单选中状态
+        function syncNavFromIframe(url) {
+            if (!url) return;
+            
+            // 提取页面文件名
+            const filename = url.split('/').pop();
+            
+            // 如果能在映射中找到对应的页面标题
+            if (pageRequirementsData.pageMapping[filename]) {
+                const pageTitle = pageRequirementsData.pageMapping[filename];
+                
+                // 保存当前内容
+                saveCurrentPageContent();
+                
+                // 更新页面标题
+                currentPageTitle = pageTitle;
+                document.getElementById('pageInfo').textContent = '当前页面: ' + pageTitle;
+                
+                // 更新左侧菜单选中状态
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.textContent.trim() === pageTitle) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // 更新右侧需求描述
+                updateRequirements(pageTitle);
+            }
+        }
+
+        function changePage(page, title) {
+            // 保存当前页面的编辑内容
+            saveCurrentPageContent();
+            
+            // 更新iframe
+            document.getElementById('pageFrame').src = page;
+            document.getElementById('pageInfo').textContent = '当前页面: ' + title;
+            
+            // 更新当前页面标题
+            currentPageTitle = title;
+            
+            // 更新激活的菜单项
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 更新右侧需求面板内容
+            updateRequirements(title);
+        }
+        
+        function updateRequirements(pageTitle) {
+            // 获取页面数据
+            const pageData = getPageData(pageTitle);
+            
+            // 更新页面标题
+            document.querySelector('.req-title div').textContent = '页面需求描述 - ' + pageTitle;
+            
+            // 更新描述文本 - 恢复可编辑模式
+            const reqDescription = document.getElementById('reqDescription');
+            reqDescription.innerHTML = pageData.description;
+            
+            // 获取所有区域标题和列表
+            const sectionTitles = document.querySelectorAll('.req-section-title');
+            
+            // 更新第一个区域：页面功能结构
+            if (sectionTitles.length > 0) {
+                sectionTitles[0].textContent = pageData.title || '页面功能结构';
+            }
+            
+            // 更新页面功能结构列表
+            const reqList = document.getElementById('reqList');
+            reqList.innerHTML = '';
+            pageData.requirements.forEach(req => {
+                const li = document.createElement('li');
+                li.innerHTML = req;
+                reqList.appendChild(li);
+            });
+            
+            // 更新功能点详细需求列表
+            const principlesList = document.getElementById('principlesList');
+            principlesList.innerHTML = '';
+            pageData.principles.forEach(principle => {
+                const li = document.createElement('li');
+                li.innerHTML = principle;
+                principlesList.appendChild(li);
+            });
+            
+            // 更新交互流程与业务逻辑列表
+            if (pageData.interactions) {
+                const interactionsList = document.getElementById('interactionsList');
+                interactionsList.innerHTML = '';
+                pageData.interactions.forEach(interaction => {
+                    const li = document.createElement('li');
+                    li.innerHTML = interaction;
+                    interactionsList.appendChild(li);
+                });
+            }
+            
+            // 更新功能优先级与依赖关系列表
+            if (pageData.priorities) {
+                const prioritiesList = document.getElementById('prioritiesList');
+                prioritiesList.innerHTML = '';
+                pageData.priorities.forEach(priority => {
+                    const li = document.createElement('li');
+                    li.innerHTML = priority;
+                    prioritiesList.appendChild(li);
+                });
+            }
+            
+            // 隐藏保存按钮和提示，因为刚加载内容
+            document.getElementById('saveButton').classList.remove('visible');
+            document.getElementById('editNotification').classList.remove('visible');
+        }
+
+        // 保存当前页面的编辑内容
+        function saveCurrentPageContent() {
+            // 获取当前编辑的内容
+            const description = document.getElementById('reqDescription').innerHTML;
+            
+            // 获取要点列表内容
+            const requirementsList = [];
+            document.querySelectorAll('#reqList li').forEach(li => {
+                requirementsList.push(li.innerHTML);
+            });
+            
+            // 获取功能点详细内容
+            const principlesList = [];
+            document.querySelectorAll('#principlesList li').forEach(li => {
+                principlesList.push(li.innerHTML);
+            });
+            
+            // 获取交互流程内容
+            const interactionsList = [];
+            document.querySelectorAll('#interactionsList li').forEach(li => {
+                interactionsList.push(li.innerHTML);
+            });
+            
+            // 获取功能优先级内容
+            const prioritiesList = [];
+            document.querySelectorAll('#prioritiesList li').forEach(li => {
+                prioritiesList.push(li.innerHTML);
+            });
+            
+            // 保存编辑后的数据
+            savePageData(currentPageTitle, {
+                'title': document.querySelector('.req-section-title').textContent,
+                'description': description,
+                'requirements': requirementsList,
+                'principles': principlesList,
+                'interactions': interactionsList,
+                'priorities': prioritiesList
+            });
+        }
+
+        // 添加编辑功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const editableElements = document.querySelectorAll('.editable-content');
+            const saveButton = document.getElementById('saveButton');
+            const editNotification = document.getElementById('editNotification');
+            let contentChanged = false;
+            
+            // 监听所有可编辑区域的内容变化
+            editableElements.forEach(element => {
+                element.addEventListener('input', function() {
+                    contentChanged = true;
+                    saveButton.classList.add('visible');
+                    editNotification.classList.add('visible');
+                });
+            });
+            
+            // 监听来自原型页面的消息，用于同步左侧菜单
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'syncNavigation') {
+                    const { page, title } = event.data;
+                    
+                    // 使用选择器找到匹配的菜单项并激活它
+                    document.querySelectorAll('.menu-item').forEach(item => {
+                        if (item.textContent.trim() === title) {
+                            // 保存当前页面的编辑内容
+                            saveCurrentPageContent();
+                            
+                            // 更新激活状态
+                            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                            item.classList.add('active');
+                            
+                            // 更新iframe内容 (但不重复加载，因为子页面已经导航)
+                            document.getElementById('pageInfo').textContent = '当前页面: ' + title;
+                            
+                            // 更新当前页面标题
+                            currentPageTitle = title;
+                            
+                            // 更新右侧需求面板内容
+                            updateRequirements(title);
+                        }
+                    });
+                }
+            });
+            
+            // 保存按钮点击事件
+            saveButton.addEventListener('click', function() {
+                // 保存当前页面内容
+                saveCurrentPageContent();
+                
+                contentChanged = false;
+                saveButton.classList.remove('visible');
+                editNotification.textContent = '保存成功！';
+                editNotification.style.color = '#4CAF50';
+                setTimeout(() => {
+                    editNotification.textContent = '已更改，请保存';
+                    editNotification.style.color = '#666';
+                    editNotification.classList.remove('visible');
+                }, 2000);
+                
+                // 替换弹窗为更友好的提示
+                const saveNotification = document.createElement('div');
+                saveNotification.style.position = 'fixed';
+                saveNotification.style.bottom = '20px';
+                saveNotification.style.right = '20px';
+                saveNotification.style.backgroundColor = '#4CAF50';
+                saveNotification.style.color = 'white';
+                saveNotification.style.padding = '10px 20px';
+                saveNotification.style.borderRadius = '4px';
+                saveNotification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                saveNotification.style.zIndex = '1000';
+                saveNotification.style.opacity = '0';
+                saveNotification.style.transition = 'opacity 0.3s';
+                saveNotification.textContent = '需求描述已保存！';
+                
+                document.body.appendChild(saveNotification);
+                
+                // 显示并自动隐藏通知
+                setTimeout(() => {
+                    saveNotification.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        saveNotification.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(saveNotification);
+                        }, 300);
+                    }, 2000);
+                }, 100);
+            });
+            
+            // 初始化加载首页的需求描述
+            updateRequirements('首页');
+        });
+    </script>
+</body>
+</html> 

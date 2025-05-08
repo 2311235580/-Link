@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 作品详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+            background-color: #FFFFFF;
+            z-index: 10;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            background-color: #FFFFFF;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .artwork-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%;
+            background-color: #F5F5F5;
+        }
+        .artwork-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .artwork-image.error::before,
+        .artwork-image.error::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #F5F5F5;
+        }
+        .artwork-image.error::before {
+            content: "×";
+            font-size: 80px;
+            color: #666666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        .artwork-image.error::after {
+            z-index: 0;
+            background: linear-gradient(to bottom right, transparent calc(50% - 1px), #666666, transparent calc(50% + 1px)), 
+                        linear-gradient(to top right, transparent calc(50% - 1px), #666666, transparent calc(50% + 1px));
+        }
+        .artwork-type {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .type-icon {
+            margin-right: 4px;
+            font-size: 10px;
+        }
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        .artwork-info {
+            padding: 20px;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .artwork-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .artwork-meta {
+            display: flex;
+            color: #666666;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+        .meta-divider {
+            margin: 0 8px;
+        }
+        .author-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+        .author-info {
+            display: flex;
+            align-items: center;
+        }
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .author-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .follow-button {
+            padding: 6px 12px;
+            border: 1px solid #000000;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+        .artwork-actions {
+            padding: 16px 20px;
+            display: flex;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 24px;
+        }
+        .action-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .action-text {
+            font-size: 12px;
+            color: #666666;
+        }
+        .comments-section {
+            padding: 16px 20px;
+        }
+        .comments-header {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comments-count {
+            color: #666666;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        .comment-item {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .comment-content {
+            flex: 1;
+        }
+        .comment-user {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .comment-text {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #666666;
+        }
+        .comment-time {
+            margin-right: 16px;
+        }
+        .comment-actions {
+            display: flex;
+            align-items: center;
+        }
+        .comment-like {
+            display: flex;
+            align-items: center;
+            margin-right: 16px;
+        }
+        .comment-reply {
+            display: flex;
+            align-items: center;
+        }
+        .action-icon-small {
+            font-size: 14px;
+            margin-right: 4px;
+        }
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F5F5F5;
+            display: flex;
+            align-items: center;
+        }
+        .comment-input {
+            flex: 1;
+            padding: 10px 16px;
+            background-color: #F5F5F5;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        .send-button {
+            padding: 8px 16px;
+            background-color: #000000;
+            color: #FFFFFF;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        /* 添加菜单样式 */
+        .action-menu {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            width: 150px;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .action-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+        
+        .action-menu-item {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .action-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .action-menu-item i {
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        .action-menu-item.danger {
+            color: #FF4757;
+        }
+        
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 900;
+            display: none;
+        }
+        
+        /* 添加自定义弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-left text-lg mr-4 cursor-pointer" onclick="syncAndNavigate('community.html', '社区页')"></i>
+            <h1 class="text-xl font-bold">作品详情</h1>
+        </div>
+        <i class="fa-solid fa-ellipsis-vertical text-lg cursor-pointer" id="menuToggle"></i>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 作品图片/视频 -->
+        <div class="artwork-container">
+            <img src="images/artwork.jpg" alt="作品图片" class="artwork-image" onerror="this.classList.add('error'); this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';">
+            <div class="artwork-type">
+                <i class="fas fa-video type-icon"></i>
+                <span>动态视频</span>
+            </div>
+            <div class="play-button">
+                <i class="fas fa-play"></i>
+            </div>
+        </div>
+
+        <!-- 作品信息 -->
+        <div class="artwork-info">
+            <h2 class="artwork-title">星空下的未来城市</h2>
+            <div class="artwork-meta">
+                <span>2023-11-25 15:30</span>
+                <span class="meta-divider">·</span>
+                <span>动态视频</span>
+                <span class="meta-divider">·</span>
+                <span>1080×1080</span>
+            </div>
+            <p class="text-sm text-gray-600">
+                使用AI技术将二次元城市风景转换为动态视频，星空的光芒随风摇曳，建筑的灯光闪烁，展现出未来科技感。
+            </p>
+            
+            <!-- 作者信息 -->
+            <div class="author-section">
+                <div class="author-info">
+                    <div class="author-avatar">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    <div>
+                        <div class="author-name">幻想大师</div>
+                        <div class="text-xs text-gray-500">作品: 28 · 粉丝: 156</div>
+                    </div>
+                </div>
+                <button class="follow-button">关注</button>
+            </div>
+        </div>
+
+        <!-- 作品互动区域 -->
+        <div class="artwork-actions">
+            <div class="action-button">
+                <i class="far fa-heart action-icon"></i>
+                <span class="action-text">62</span>
+            </div>
+            <div class="action-button">
+                <i class="far fa-comment action-icon"></i>
+                <span class="action-text">18</span>
+            </div>
+            <div class="action-button">
+                <i class="far fa-bookmark action-icon"></i>
+                <span class="action-text">收藏</span>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-share-alt action-icon"></i>
+                <span class="action-text">分享</span>
+            </div>
+        </div>
+
+        <!-- 评论区域 -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <span>评论</span>
+                <span class="comments-count">18条</span>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="comment-item">
+                <div class="comment-avatar">
+                    <i class="fas fa-user text-gray-400 text-sm"></i>
+                </div>
+                <div class="comment-content">
+                    <div class="comment-user">像素艺术家</div>
+                    <div class="comment-text">真的很赞！星空的效果特别梦幻，建筑的光影变化也非常自然。请问使用了什么风格选项？</div>
+                    <div class="comment-meta">
+                        <span class="comment-time">2小时前</span>
+                        <div class="comment-actions">
+                            <div class="comment-like">
+                                <i class="far fa-heart action-icon-small"></i>
+                                <span>12</span>
+                            </div>
+                            <div class="comment-reply">
+                                <i class="far fa-comment action-icon-small"></i>
+                                <span>回复</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comment-item">
+                <div class="comment-avatar">
+                    <i class="fas fa-user text-gray-400 text-sm"></i>
+                </div>
+                <div class="comment-content">
+                    <div class="comment-user">动态创作者</div>
+                    <div class="comment-text">色彩搭配非常和谐，动态效果也很流畅，学习了！</div>
+                    <div class="comment-meta">
+                        <span class="comment-time">5小时前</span>
+                        <div class="comment-actions">
+                            <div class="comment-like">
+                                <i class="far fa-heart action-icon-small"></i>
+                                <span>8</span>
+                            </div>
+                            <div class="comment-reply">
+                                <i class="far fa-comment action-icon-small"></i>
+                                <span>回复</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部留白，确保内容不被输入框遮挡 -->
+        <div class="h-24"></div>
+    </div>
+    
+    <!-- 底部评论输入框 -->
+    <div class="bottom-actions">
+        <div class="comment-input">添加评论...</div>
+        <button class="send-button">发送</button>
+    </div>
+
+    <!-- 操作菜单 -->
+    <div class="action-menu" id="actionMenu">
+        <div class="action-menu-item">
+            <i class="fas fa-edit"></i> 编辑作品
+        </div>
+        <div class="action-menu-item">
+            <i class="fas fa-arrow-up-from-bracket"></i> 发送到设备
+        </div>
+        <div class="action-menu-item">
+            <i class="fas fa-flag"></i> 举报
+        </div>
+        <div class="action-menu-item danger">
+            <i class="fas fa-trash-alt"></i> 删除作品
+        </div>
+    </div>
+    
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        // 初始化点赞按钮
+        document.querySelector('.action-button:first-child').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            const countText = this.querySelector('.action-text');
+            const count = parseInt(countText.textContent);
+            
+            if (icon.classList.contains('far')) {
+                // 点赞
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.style.color = '#FF4757';
+                countText.textContent = (count + 1).toString();
+            } else {
+                // 取消点赞
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = '';
+                countText.textContent = (count - 1).toString();
+            }
+        });
+
+        // 初始化收藏按钮
+        document.querySelector('.action-button:nth-child(3)').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('far')) {
+                // 收藏
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.style.color = '#FFD700';
+                showToast('已收藏作品');
+            } else {
+                // 取消收藏
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = '';
+                showToast('已取消收藏');
+            }
+        });
+
+        // 初始化分享按钮
+        document.querySelector('.action-button:last-child').addEventListener('click', function() {
+            showToast('分享功能已触发');
+        });
+
+        // 初始化关注按钮
+        document.querySelector('.follow-button').addEventListener('click', function() {
+            if (this.textContent === '关注') {
+                this.textContent = '已关注';
+                this.style.backgroundColor = '#F5F5F5';
+                this.style.color = '#000000';
+                showToast('已关注该作者');
+            } else {
+                this.textContent = '关注';
+                this.style.backgroundColor = '#000000';
+                this.style.color = '#FFFFFF';
+                showToast('已取消关注');
+            }
+        });
+
+        // 初始化播放按钮
+        document.querySelector('.play-button').addEventListener('click', function() {
+            showToast('播放视频功能已触发');
+        });
+
+        // 处理图片加载错误
+        document.addEventListener('DOMContentLoaded', function() {
+            const artworkImage = document.querySelector('.artwork-image');
+            // 模拟图片加载失败，仅用于测试
+            // setTimeout(() => {
+            //     artworkImage.onerror();
+            // }, 500);
+        });
+        
+        // 初始化菜单功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const actionMenu = document.getElementById('actionMenu');
+            const menuOverlay = document.getElementById('menuOverlay');
+            
+            menuToggle.addEventListener('click', function() {
+                actionMenu.classList.add('show');
+                menuOverlay.style.display = 'block';
+            });
+            
+            menuOverlay.addEventListener('click', function() {
+                actionMenu.classList.remove('show');
+                this.style.display = 'none';
+            });
+            
+            // 菜单项点击事件
+            const menuItems = document.querySelectorAll('.action-menu-item');
+            menuItems.forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    actionMenu.classList.remove('show');
+                    menuOverlay.style.display = 'none';
+                    
+                    // 根据点击的菜单项执行不同操作
+                    switch(index) {
+                        case 0: // 编辑作品
+                            syncAndNavigate('artwork-edit.html', '作品编辑');
+                            break;
+                        case 1: // 发送到设备
+                            showToast('正在准备发送到设备...');
+                            syncAndNavigate('transfer-progress.html', '传输进度');
+                            break;
+                        case 2: // 举报
+                            showToast('举报功能已触发');
+                            break;
+                        case 3: // 删除作品
+                            showConfirmModal('确定要删除这个作品吗？此操作不可撤销。', function() {
+                                showToast('作品已删除');
+                                syncAndNavigate('profile.html', '个人中心');
+                            });
+                            break;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

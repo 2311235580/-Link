@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 处理失败</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .processing-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .preview-area {
+            width: 100%;
+            max-width: 280px;
+            height: 280px;
+            border-radius: 12px;
+            background-color: #F5F5F5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 32px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #E5E5E5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background-image: url("data:image/svg+xml,%3Csvg width='280' height='280' viewBox='0 0 280 280' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='280' height='280' fill='%23F5F5F5'/%3E%3Crect x='70' y='70' width='140' height='140' rx='8' fill='%23E8E8E8'/%3E%3Cpath d='M140 95V185' stroke='%23D0D0D0' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M95 140H185' stroke='%23D0D0D0' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) blur(2px);
+            opacity: 0.3;
+        }
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255, 235, 235, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #FF4D4F;
+            font-size: 32px;
+        }
+        .error-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 8px;
+            color: #333333;
+        }
+        .error-description {
+            text-align: center;
+            margin-top: 8px;
+            color: #666666;
+            font-size: 14px;
+        }
+        .status-updates {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 8px;
+            background-color: #F5F5F5;
+            padding: 16px;
+            margin-top: 24px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: #CCCCCC;
+        }
+        .status-icon.completed {
+            color: #000000;
+        }
+        .status-icon.error {
+            color: #FF4D4F;
+        }
+        .status-text {
+            color: #666666;
+        }
+        .status-text.active {
+            color: #000000;
+            font-weight: 500;
+        }
+        .status-text.error {
+            color: #FF4D4F;
+            font-weight: 500;
+        }
+        .action-button {
+            width: 100%;
+            max-width: 320px;
+            background-color: #000000;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 32px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .action-button:hover {
+            background-color: #333333;
+        }
+        .secondary-button {
+            width: 100%;
+            max-width: 320px;
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .secondary-button:hover {
+            background-color: #F5F5F5;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">处理失败</h1>
+        <i class="fa-solid fa-xmark text-lg cursor-pointer" onclick="syncAndNavigate('creation.html', '图片上传')"></i>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 处理失败区域 -->
+        <div class="processing-section">
+            <div class="preview-area">
+                <img src="https://via.placeholder.com/280x280/f5f5f5/666666?text=Preview" alt="图片预览" class="preview-image">
+                <div class="error-overlay">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="error-text">处理失败</div>
+                </div>
+            </div>
+
+            <p class="error-description">
+                抱歉，您的图片处理遇到了问题<br>
+                请检查图片或网络连接后重试
+            </p>
+
+            <!-- 处理状态列表 -->
+            <div class="status-updates">
+                <div class="status-item">
+                    <div class="status-icon completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="status-text">图片上传完成</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon completed">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="status-text">图像分析完成</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon error">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="status-text error">AI风格转换失败</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-icon">
+                        <i class="fas fa-circle text-xs"></i>
+                    </div>
+                    <div class="status-text">优化处理</div>
+                </div>
+            </div>
+
+            <!-- 错误代码 -->
+            <div class="mt-4 text-sm text-gray-500">
+                错误代码: AI-ERROR-5023
+            </div>
+
+            <!-- 操作按钮 -->
+            <button class="action-button" onclick="retryProcessing()">
+                <i class="fas fa-redo mr-2"></i>重新尝试
+            </button>
+            <button class="secondary-button" onclick="syncAndNavigate('creation.html', '图片上传')">
+                <i class="fas fa-arrow-left mr-2"></i>返回上传页
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 重试处理
+        function retryProcessing() {
+            // 显示加载状态
+            document.querySelector('.error-icon').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            document.querySelector('.error-text').textContent = '正在重试...';
+            
+            // 禁用按钮
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.style.opacity = 0.7;
+                button.style.cursor = 'not-allowed';
+            });
+            
+            // 模拟重试延迟
+            setTimeout(() => {
+                // 导航到处理中页面
+                window.location.href = 'creation-processing.html';
+            }, 1500);
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原物永伴 - 创作结果</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F5F5F5;
+            background-color: #ffffff;
+            z-index: 10;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 20px 0 30px;
+            display: flex;
+            flex-direction: column;
+        }
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+        .result-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .result-preview {
+            width: 100%;
+            max-width: 320px;
+            height: 320px;
+            border-radius: 12px;
+            background-color: #F0F0F0;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #E5E5E5;
+            background-image: url("data:image/svg+xml,%3Csvg width='320' height='320' viewBox='0 0 320 320' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='320' height='320' fill='%23F0F0F0'/%3E%3Cpath d='M40 40L280 280' stroke='%23E0E0E0' stroke-width='4'/%3E%3Cpath d='M280 40L40 280' stroke='%23E0E0E0' stroke-width='4'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .result-type {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .type-icon {
+            margin-right: 6px;
+            font-size: 11px;
+        }
+        .image-info {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 0 24px;
+            font-size: 12px;
+            color: #666666;
+            text-align: center;
+        }
+        .action-buttons {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .primary-button {
+            width: 100%;
+            background-color: #000000;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .primary-button:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .secondary-button {
+            width: 100%;
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .secondary-button:active {
+            background-color: #F8F8F8;
+        }
+        .action-row {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            flex: 1;
+        }
+        .action-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: #F7F7F7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: #555555;
+            transition: all 0.2s ease;
+        }
+        .action-icon:active {
+            background-color: #EEEEEE;
+            transform: scale(0.95);
+        }
+        .action-text {
+            font-size: 12px;
+            color: #555555;
+            text-align: center;
+        }
+        
+        /* 添加手机内弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-container {
+            width: 85%;
+            max-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-message {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .modal-button {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-button:active {
+            background-color: #f0f0f0;
+        }
+        
+        .modal-button.confirm {
+            color: #3B7CFF;
+            font-weight: 500;
+        }
+        
+        .modal-button.cancel {
+            color: #999;
+            border-right: 1px solid #eee;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+        <h1 class="text-xl font-bold">创作完成</h1>
+        <div class="flex">
+            <i class="fa-solid fa-xmark text-lg cursor-pointer" onclick="syncAndNavigate('home.html', '首页')"></i>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 结果预览区域 -->
+        <div class="result-section">
+            <div class="result-preview">
+                <img src="data:image/svg+xml,%3Csvg width='320' height='320' viewBox='0 0 320 320' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='320' height='320' fill='%23F0F0F0'/%3E%3Cpath d='M40 40L280 280' stroke='%23E0E0E0' stroke-width='4'/%3E%3Cpath d='M280 40L40 280' stroke='%23E0E0E0' stroke-width='4'/%3E%3C/svg%3E" alt="处理结果" class="result-image">
+                <div class="result-type">
+                    <i class="fas fa-video type-icon"></i>
+                    <span>动态视频</span>
+                </div>
+            </div>
+
+            <div class="image-info">
+                创建于 2023-11-25 15:30 · 动态视频 · 1080×1080
+            </div>
+
+            <!-- 主要操作按钮 -->
+            <div class="action-buttons">
+                <button class="primary-button" id="sendToDeviceBtn">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    发送到我的设备
+                </button>
+                <button class="secondary-button" id="editAndPublishBtn">
+                    <i class="fas fa-edit mr-2"></i>
+                    编辑并发布
+                </button>
+            </div>
+
+            <!-- 其他操作 -->
+            <div class="action-row">
+                <div class="action-item" id="regenerateBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-redo"></i>
+                    </div>
+                    <div class="action-text">重新生成</div>
+                </div>
+                <div class="action-item" id="shareBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div class="action-text">分享</div>
+                </div>
+                <div class="action-item" id="saveToAlbumBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-save"></i>
+                    </div>
+                    <div class="action-text">保存到相册</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 自定义弹窗 -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-title">提示</div>
+                <div class="modal-message" id="modalMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <div class="modal-button cancel" id="modalCancel">取消</div>
+                <div class="modal-button confirm" id="modalConfirm">确定</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 同步左侧菜单并导航
+        function syncAndNavigate(page, title) {
+            // 向父窗口发送消息，同步左侧菜单
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'syncNavigation',
+                    page: page,
+                    title: title
+                }, '*');
+            }
+            
+            // 默认导航行为
+            window.location.href = page;
+        }
+
+        // 获取或设置来源页面记录
+        function getEntrySource() {
+            // 首先尝试从URL参数中获取来源
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('source');
+            
+            // 如果URL中有来源参数，则优先使用并保存到localStorage
+            if (source) {
+                localStorage.setItem('entrySource', source);
+                return source;
+            }
+            
+            // 如果URL中没有，则尝试从localStorage获取
+            const savedSource = localStorage.getItem('entrySource');
+            if (savedSource) {
+                return savedSource;
+            }
+            
+            // 默认返回首页
+            return 'home';
+        }
+        
+        // 显示自定义确认弹窗
+        function showConfirmModal(message, confirmCallback) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const cancelBtn = document.getElementById('modalCancel');
+            const confirmBtn = document.getElementById('modalConfirm');
+            
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+            
+            // 取消按钮事件
+            cancelBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+            
+            // 确认按钮事件
+            confirmBtn.onclick = function() {
+                modal.style.display = 'none';
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+            };
+        }
+        
+        // 显示提示信息
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(function() {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        // 初始化按钮事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 发送到设备按钮
+            document.getElementById('sendToDeviceBtn').addEventListener('click', function() {
+                showConfirmModal('是否将此作品发送到您的设备？', function() {
+                    window.location.href = 'transfer-progress.html';
+                });
+            });
+            
+            // 编辑并发布按钮
+            document.getElementById('editAndPublishBtn').addEventListener('click', function() {
+                const source = getEntrySource();
+                window.location.href = `artwork-edit.html?source=${source}`;
+            });
+            
+            // 重新生成按钮
+            document.getElementById('regenerateBtn').addEventListener('click', function() {
+                showConfirmModal('是否重新生成此作品？', function() {
+                    window.location.href = 'creation-processing.html';
+                });
+            });
+            
+            // 分享按钮
+            document.getElementById('shareBtn').addEventListener('click', function() {
+                showToast('分享功能已触发');
+            });
+            
+            // 保存到相册按钮
+            document.getElementById('saveToAlbumBtn').addEventListener('click', function() {
+                showToast('作品已保存到相册');
+            });
+        });
+    </script>
+</body>
+</html> 
